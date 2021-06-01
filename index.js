@@ -169,7 +169,7 @@ class Grid {
     static ALIVE_2 = 2;
     static ALIVE_3 = 3;
 
-    static size = 10;
+    static size = 5;
     static width = canvas.width / Grid.size;
     static height = canvas.height / Grid.size;
    
@@ -202,7 +202,7 @@ class Grid {
 
         cur[25][25] = Grid.ALIVE_1;
 
-        let x = 25, y = 25
+        let x = 23, y = 25
         cur[x+1][y+1] = Grid.ALIVE_1
         cur[x+1][y+2] = Grid.ALIVE_1
         cur[x+2][y+1] = Grid.ALIVE_1
@@ -216,20 +216,20 @@ class Grid {
         cur[x+2][y+1] = Grid.ALIVE_2
         cur[x+3][y+1] = Grid.ALIVE_2
         cur[x+2][y+3] = Grid.ALIVE_2
-        x = 55, y = 55
+        x = 56, y = 55
         cur[x+1][y+1] = Grid.ALIVE_2
         cur[x+1][y+2] = Grid.ALIVE_2
         cur[x+2][y+1] = Grid.ALIVE_2
         cur[x+3][y+1] = Grid.ALIVE_2
         cur[x+2][y+3] = Grid.ALIVE_2
 
-        x =67, y = 20
+        x =67, y = 25
         cur[x+1][y+1] = Grid.ALIVE_3
         cur[x+1][y+2] = Grid.ALIVE_3
         cur[x+2][y+1] = Grid.ALIVE_3
         cur[x+3][y+1] = Grid.ALIVE_3
         cur[x+2][y+3] = Grid.ALIVE_3
-        x =69, y = 23
+        x =69, y = 22
         cur[x+1][y+1] = Grid.ALIVE_3
         cur[x+1][y+2] = Grid.ALIVE_3
         cur[x+2][y+1] = Grid.ALIVE_3
@@ -266,7 +266,7 @@ class Grid {
 
         if(this.steps > 50) {
              a_2_ind = this.a_1 < 50 ? 5 : 3;
-             a_3_ind = this.a_2 < 50 ? 4 : 3;
+             a_3_ind = this.a_2 < 50 ? 5 : 3;
         } else {
              a_2_ind = 3;
              a_3_ind = 3;
@@ -280,7 +280,7 @@ class Grid {
                 switch(cur[i][j]) {
                     case Grid.DEAD: {
                         let alive = [
-                            0,0,0
+                            0,0,0,0
                         ]
 
                         for(let k = i - 1; k < i + 2; k++) {
@@ -331,7 +331,7 @@ class Grid {
 
                         if(al < 1) {
                             next[i][j] = Grid.DEAD
-                        } else if(al > a_2_ind) {
+                        } else if(al > 4) {
                             next[i][j] = Grid.DEAD
                         }
 
@@ -345,7 +345,7 @@ class Grid {
                             for(let l = j - 1; l < j + 2; l++) {
                                 if(cur[k][l] == Grid.ALIVE_1) {
 
-                                    let c = (Math.cos((k * i + l * j + 1231) + this.steps) * 131) % 6
+                                    let c = (Math.cos((k * i + l * j + 121) + this.steps) * 131) % 6
 
                                     if(c > 4)
                                         next[k][l] = Grid.ALIVE_2
@@ -375,7 +375,7 @@ class Grid {
 
                                     let c = (Math.cos((k * i + l * j + 131)) * 531 + this.steps) % 6
 
-                                    if(c > 1)
+                                    if(c > 3)
                                         next[k][l] = Grid.ALIVE_3
                                 }
                                 else if(cur[k][l] == Grid.ALIVE_3) {
