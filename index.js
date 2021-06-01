@@ -153,6 +153,8 @@ class Tile extends Sprite2D {
 
         this.spriteSheet.createFrame(0,0,32,32);
         this.spriteSheet.createFrame(32,32,32,32);
+        this.spriteSheet.createFrame(64,0,32,32);
+        this.spriteSheet.createFrame(64,64,32,32);
     }
     
     constructor(x, y) {
@@ -164,10 +166,16 @@ class Tile extends Sprite2D {
 class Grid {
     static DEAD = 0;
     static ALIVE_1 = 1;
+    static ALIVE_2 = 2;
+    static ALIVE_3 = 3;
 
-    static width = 80;
-    static height = 70;
     static size = 10;
+    static width = canvas.width / Grid.size;
+    static height = canvas.height / Grid.size;
+   
+    a_1 = 0;
+    a_2 = 0;
+    a_3 = 0;
 
     tiles = []
     buffer1 = [Grid.width];
@@ -201,9 +209,40 @@ class Grid {
         cur[x+3][y+1] = Grid.ALIVE_1
         cur[x+2][y+3] = Grid.ALIVE_1
 
+
+         x = 55, y = 53
+        cur[x+1][y+1] = Grid.ALIVE_2
+        cur[x+1][y+2] = Grid.ALIVE_2
+        cur[x+2][y+1] = Grid.ALIVE_2
+        cur[x+3][y+1] = Grid.ALIVE_2
+        cur[x+2][y+3] = Grid.ALIVE_2
+        x = 55, y = 55
+        cur[x+1][y+1] = Grid.ALIVE_2
+        cur[x+1][y+2] = Grid.ALIVE_2
+        cur[x+2][y+1] = Grid.ALIVE_2
+        cur[x+3][y+1] = Grid.ALIVE_2
+        cur[x+2][y+3] = Grid.ALIVE_2
+
+        x =67, y = 20
+        cur[x+1][y+1] = Grid.ALIVE_3
+        cur[x+1][y+2] = Grid.ALIVE_3
+        cur[x+2][y+1] = Grid.ALIVE_3
+        cur[x+3][y+1] = Grid.ALIVE_3
+        cur[x+2][y+3] = Grid.ALIVE_3
+        x =69, y = 22
+        cur[x+1][y+1] = Grid.ALIVE_3
+        cur[x+1][y+2] = Grid.ALIVE_3
+        cur[x+2][y+1] = Grid.ALIVE_3
+        cur[x+3][y+1] = Grid.ALIVE_3
+        cur[x+2][y+3] = Grid.ALIVE_3
+
     }
 
+    steps = 0;
+
     update() {
+        this.steps++;
+
         let cur, next;
 
         if(this.usingBuffer1) {
@@ -222,31 +261,137 @@ class Grid {
             }
         }
 
+        let a_2_ind = 3;
+        let a_3_ind = 3;
+
+        if(this.steps > 50) {
+             a_2_ind = this.a_1 < 50 ? 5 : 3;
+             a_3_ind = this.a_2 < 50 ? 5 : 3;
+        } else {
+             a_2_ind = 3;
+             a_3_ind = 3;
+        }
+        this.a_1 = 0;
+        this.a_2 = 0;
+        this.a_3 = 0;
+
         for(let i = 1; i < Grid.width -1; i++) {
             for(let j = 1; j < Grid.height -1; j++) {
-                let al = 0;
-                
-                for(let k = i - 1; k < i + 2; k++) {
-                    for(let l = j - 1; l < j + 2; l++) {
-                        if(cur[k][l] == Grid.ALIVE_1) {
-                            if(k == i && l == j)
-                                continue
-                            al++;
+                switch(cur[i][j]) {
+                    case Grid.DEAD: {
+                        let alive = [
+                            0,0,0
+                        ]
+
+                        for(let k = i - 1; k < i + 2; k++) {
+                            for(let l = j - 1; l < j + 2; l++) {
+                                if(cur[k][l] > Grid.DEAD) {
+                                    
+                                    if(k == i && l == j)
+                                        continue
+                                    alive[cur[k][l]]++;
+                                }
+                            }
                         }
-                    }
-                }
+
+                        let max = 0, ind;
+                        for(let i = 0; i < alive.length; i++) {
+                            if(alive[i] > max) {
+                                max = alive[i]
+                                ind = i
+                            }
+                        }
+
+                        if(max == 3 || max == 4) {
+                            next[i][j] = ind;
+                        }
                 
-                if(cur[i][j] == Grid.ALIVE_1) {
-                    if(al < 2) {
-                        next[i][j] = Grid.DEAD
-                    } else if(al > 4) {
-                        next[i][j] = Grid.DEAD
-                    }
-                } else {
-                    if(al == 3) {
-                        next[i][j] = Grid.ALIVE_1
-                   
-                    }
+                    } break;
+
+                    case Grid.ALIVE_1: {
+                        this.a_1++;
+
+                        let al = 0;
+                        for(let k = i - 1; k < i + 2; k++) {
+                            for(let l = j - 1; l < j + 2; l++) {
+                                if(cur[k][l] == Grid.ALIVE_3) {
+
+                                    let c = (Math.cos((k * i + l * j + 11)) * 131) % 6
+
+                                    if(c > 4)
+                                        next[k][l] = Grid.ALIVE_1
+                                }
+                                else if(cur[k][l] == Grid.ALIVE_1) {
+                                    if(k == i && l == j)
+                                        continue
+                                    al++;
+                                }
+                            }
+                        }
+
+                        if(al < 1) {
+                            next[i][j] = Grid.DEAD
+                        } else if(al > a_2_ind) {
+                            next[i][j] = Grid.DEAD
+                        }
+
+                    } break;
+
+                    case Grid.ALIVE_2: {
+                        this.a_2++;
+
+                        let al = 0;
+                        for(let k = i - 1; k < i + 2; k++) {
+                            for(let l = j - 1; l < j + 2; l++) {
+                                if(cur[k][l] == Grid.ALIVE_1) {
+
+                                    let c = (Math.cos((k * i + l * j + 1231)) * 131) % 6
+
+                                    if(c > 4)
+                                        next[k][l] = Grid.ALIVE_2
+                                }
+                                else if(cur[k][l] == Grid.ALIVE_2) {
+                                    if(k == i && l == j)
+                                        continue
+                                    al++;
+                                }
+                            }
+                        }
+
+                        if(al < 1) {
+                            next[i][j] = Grid.DEAD
+                        } else if(al > a_2_ind) {
+                            next[i][j] = Grid.DEAD
+                        }
+                    } break;
+
+                    case Grid.ALIVE_3: {
+                        this.a_3++;
+
+                        let al = 0;
+                        for(let k = i - 1; k < i + 2; k++) {
+                            for(let l = j - 1; l < j + 2; l++) {
+                                if(cur[k][l] == Grid.ALIVE_2) {
+
+                                    let c = (Math.cos((k * i + l * j + 131)) * 1331) % 6
+
+                                    if(c > 1)
+                                        next[k][l] = Grid.ALIVE_3
+                                }
+                                else if(cur[k][l] == Grid.ALIVE_3) {
+                                    if(k == i && l == j)
+                                        continue
+                                    al++;
+                                }
+                            }
+                        }
+
+                        if(al < 1) {
+                            next[i][j] = Grid.DEAD
+                        } else if(al > a_3_ind) {
+                            next[i][j] = Grid.DEAD
+                        }
+                    } break;
                 }
             }
         }
