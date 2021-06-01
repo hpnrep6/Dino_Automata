@@ -229,7 +229,7 @@ class Grid {
         cur[x+2][y+1] = Grid.ALIVE_3
         cur[x+3][y+1] = Grid.ALIVE_3
         cur[x+2][y+3] = Grid.ALIVE_3
-        x =69, y = 22
+        x =69, y = 23
         cur[x+1][y+1] = Grid.ALIVE_3
         cur[x+1][y+2] = Grid.ALIVE_3
         cur[x+2][y+1] = Grid.ALIVE_3
