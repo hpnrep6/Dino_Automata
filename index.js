@@ -266,7 +266,7 @@ class Grid {
 
         if(this.steps > 50) {
              a_2_ind = this.a_1 < 50 ? 5 : 3;
-             a_3_ind = this.a_2 < 50 ? 5 : 3;
+             a_3_ind = this.a_2 < 50 ? 4 : 3;
         } else {
              a_2_ind = 3;
              a_3_ind = 3;
@@ -316,7 +316,7 @@ class Grid {
                             for(let l = j - 1; l < j + 2; l++) {
                                 if(cur[k][l] == Grid.ALIVE_3) {
 
-                                    let c = (Math.cos((k * i + l * j + 11)) * 131) % 6
+                                    let c = (Math.cos((k * i + l * j + 11)) * 131 + this.steps) % 6
 
                                     if(c > 4)
                                         next[k][l] = Grid.ALIVE_1
@@ -345,7 +345,7 @@ class Grid {
                             for(let l = j - 1; l < j + 2; l++) {
                                 if(cur[k][l] == Grid.ALIVE_1) {
 
-                                    let c = (Math.cos((k * i + l * j + 1231)) * 131) % 6
+                                    let c = (Math.cos((k * i + l * j + 1231) + this.steps) * 131) % 6
 
                                     if(c > 4)
                                         next[k][l] = Grid.ALIVE_2
@@ -373,7 +373,7 @@ class Grid {
                             for(let l = j - 1; l < j + 2; l++) {
                                 if(cur[k][l] == Grid.ALIVE_2) {
 
-                                    let c = (Math.cos((k * i + l * j + 131)) * 1331) % 6
+                                    let c = (Math.cos((k * i + l * j + 131)) * 531 + this.steps) % 6
 
                                     if(c > 1)
                                         next[k][l] = Grid.ALIVE_3
