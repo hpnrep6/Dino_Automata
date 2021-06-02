@@ -120,7 +120,7 @@ class Tile extends Sprite2D {
     }
     
     constructor(x, y) {
-        super(null, TextureManager.sprites, x, y, Main.w, Main.w, 0, 0, Tile.spriteSheet)
+        super(null, TextureManager.sprites, x, y, Grid.size, Grid.size, 0, 0, Tile.spriteSheet)
 
     }
 }
@@ -131,7 +131,7 @@ class Grid {
     static ALIVE_2 = 2;
     static ALIVE_3 = 3;
 
-    static size = 8;
+    static size = 30;
     static width = canvas.width / Grid.size;
     static height = canvas.height / Grid.size;
    
@@ -160,36 +160,53 @@ class Grid {
             }
         }
 
-        this.buffer1[25][25] = Grid.ALIVE_1;
+        // this.buffer1[25][25] = Grid.ALIVE_1;
 
-        let x = 23, y = 25
+        // let x = 23, y = 25
+        // this.buffer1[x+1][y+1] = Grid.ALIVE_1
+        // this.buffer1[x+1][y+2] = Grid.ALIVE_1
+        // this.buffer1[x+2][y+1] = Grid.ALIVE_1
+        // this.buffer1[x+3][y+1] = Grid.ALIVE_1
+        // this.buffer1[x+2][y+3] = Grid.ALIVE_1
+        let x = 4, y = 5
         this.buffer1[x+1][y+1] = Grid.ALIVE_1
         this.buffer1[x+1][y+2] = Grid.ALIVE_1
         this.buffer1[x+2][y+1] = Grid.ALIVE_1
         this.buffer1[x+3][y+1] = Grid.ALIVE_1
         this.buffer1[x+2][y+3] = Grid.ALIVE_1
 
+        //  x = 55, y = 53
+        // this.buffer1[x+1][y+1] = Grid.ALIVE_2
+        // this.buffer1[x+1][y+2] = Grid.ALIVE_2
+        // this.buffer1[x+2][y+1] = Grid.ALIVE_2
+        // this.buffer1[x+3][y+1] = Grid.ALIVE_2
+        // this.buffer1[x+2][y+3] = Grid.ALIVE_2
+        // x = 56, y = 55
+        // this.buffer1[x+1][y+1] = Grid.ALIVE_2
+        // this.buffer1[x+1][y+2] = Grid.ALIVE_2
+        // this.buffer1[x+2][y+1] = Grid.ALIVE_2
+        // this.buffer1[x+3][y+1] = Grid.ALIVE_2
+        // this.buffer1[x+2][y+3] = Grid.ALIVE_2
 
-         x = 55, y = 53
+        x = 8, y = 9
         this.buffer1[x+1][y+1] = Grid.ALIVE_2
         this.buffer1[x+1][y+2] = Grid.ALIVE_2
         this.buffer1[x+2][y+1] = Grid.ALIVE_2
         this.buffer1[x+3][y+1] = Grid.ALIVE_2
         this.buffer1[x+2][y+3] = Grid.ALIVE_2
-        x = 56, y = 55
-        this.buffer1[x+1][y+1] = Grid.ALIVE_2
-        this.buffer1[x+1][y+2] = Grid.ALIVE_2
-        this.buffer1[x+2][y+1] = Grid.ALIVE_2
-        this.buffer1[x+3][y+1] = Grid.ALIVE_2
-        this.buffer1[x+2][y+3] = Grid.ALIVE_2
-
-        x =67, y = 25
-        this.buffer1[x+1][y+1] = Grid.ALIVE_3
-        this.buffer1[x+1][y+2] = Grid.ALIVE_3
-        this.buffer1[x+2][y+1] = Grid.ALIVE_3
-        this.buffer1[x+3][y+1] = Grid.ALIVE_3
-        this.buffer1[x+2][y+3] = Grid.ALIVE_3
-        x =69, y = 22
+        // x =67, y = 25
+        // this.buffer1[x+1][y+1] = Grid.ALIVE_3
+        // this.buffer1[x+1][y+2] = Grid.ALIVE_3
+        // this.buffer1[x+2][y+1] = Grid.ALIVE_3
+        // this.buffer1[x+3][y+1] = Grid.ALIVE_3
+        // this.buffer1[x+2][y+3] = Grid.ALIVE_3
+        // x =69, y = 22
+        // this.buffer1[x+1][y+1] = Grid.ALIVE_3
+        // this.buffer1[x+1][y+2] = Grid.ALIVE_3
+        // this.buffer1[x+2][y+1] = Grid.ALIVE_3
+        // this.buffer1[x+3][y+1] = Grid.ALIVE_3
+        // this.buffer1[x+2][y+3] = Grid.ALIVE_3
+        x =13, y = 2
         this.buffer1[x+1][y+1] = Grid.ALIVE_3
         this.buffer1[x+1][y+2] = Grid.ALIVE_3
         this.buffer1[x+2][y+1] = Grid.ALIVE_3
