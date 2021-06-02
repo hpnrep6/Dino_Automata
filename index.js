@@ -131,7 +131,7 @@ class Grid {
     static ALIVE_2 = 2;
     static ALIVE_3 = 3;
 
-    static size = 30;
+    static size = 8;
     static width = canvas.width / Grid.size;
     static height = canvas.height / Grid.size;
    
