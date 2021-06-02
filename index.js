@@ -75,6 +75,7 @@ export class Main extends Scene {
     sizee = canvas.height / Main.w;
     sizew = canvas.width / Main.w;
 
+    c = 0;
     _update(delta) {
 
         let off = Math.cos(z0.getElapsedTime() / 1000) * 0.1;
@@ -99,7 +100,9 @@ export class Main extends Scene {
             return
         }
 
+        if(this.c > 600) return;
         this.grid.update();
+        this.c++;
     }
 
     start() {
@@ -132,8 +135,8 @@ class Grid {
     static ALIVE_3 = 3;
 
     static size = 8;
-    static width = canvas.width / Grid.size;
-    static height = canvas.height / Grid.size;
+    static width = canvas.width / Grid.size + Grid.size;
+    static height = canvas.height / Grid.size + Grid.size;
    
     a_1 = 0;
     a_2 = 0;
@@ -144,8 +147,8 @@ class Grid {
     buffer2 = [Grid.width];
     usingBuffer1 = true;
 
-    xLoc = Grid.size / 2;
-    yLoc = Grid.size / 2;
+    xLoc = Grid.size / 2 - Grid.size;
+    yLoc = Grid.size / 2 - Grid.size;
 
     constructor() {
         for(let i = 0; i < Grid.width; i++) {
@@ -168,7 +171,7 @@ class Grid {
         // this.buffer1[x+2][y+1] = Grid.ALIVE_1
         // this.buffer1[x+3][y+1] = Grid.ALIVE_1
         // this.buffer1[x+2][y+3] = Grid.ALIVE_1
-        let x = 4, y = 5
+        let x = 66, y = 44
         this.buffer1[x+1][y+1] = Grid.ALIVE_1
         this.buffer1[x+1][y+2] = Grid.ALIVE_1
         this.buffer1[x+2][y+1] = Grid.ALIVE_1
@@ -188,7 +191,7 @@ class Grid {
         // this.buffer1[x+3][y+1] = Grid.ALIVE_2
         // this.buffer1[x+2][y+3] = Grid.ALIVE_2
 
-        x = 8, y = 9
+        x = 68, y = 69
         this.buffer1[x+1][y+1] = Grid.ALIVE_2
         this.buffer1[x+1][y+2] = Grid.ALIVE_2
         this.buffer1[x+2][y+1] = Grid.ALIVE_2
@@ -206,7 +209,7 @@ class Grid {
         // this.buffer1[x+2][y+1] = Grid.ALIVE_3
         // this.buffer1[x+3][y+1] = Grid.ALIVE_3
         // this.buffer1[x+2][y+3] = Grid.ALIVE_3
-        x =13, y = 2
+        x =63, y = 62
         this.buffer1[x+1][y+1] = Grid.ALIVE_3
         this.buffer1[x+1][y+2] = Grid.ALIVE_3
         this.buffer1[x+2][y+1] = Grid.ALIVE_3
@@ -228,8 +231,8 @@ class Grid {
         x = Math.floor(x);
         y = Math.floor(y);
 
-        if(x < 0 || x >= Grid.width) return;
-        if(y < 0 || y >= Grid.height) return;
+        if(x < 1 || x >= Grid.width) return;
+        if(y < 1 || y >= Grid.height) return;
         
         this.buffer1[x][y] = v;
         this.buffer2[x][y] = v;
@@ -266,8 +269,8 @@ class Grid {
         this.a_2 = 0;
         this.a_3 = 0;
 
-        for(let i = 1; i < Grid.width -1; i++) {
-            for(let j = 1; j < Grid.height -1; j++) {
+        for(let i = 1; i < this.buffer1.length - 1; i++) {
+            for(let j = 1; j < this.buffer1[0].length - 1; j++) {
                 switch(this.buffer1[i][j]) {
                     case Grid.DEAD: {
                         let alive = [
@@ -391,8 +394,8 @@ class Grid {
     }
 
     updateGraphics() {
-        for(let i = 1; i < Grid.width - 1; i++) {
-            for(let j = 1; j < Grid.height - 1; j++) {
+        for(let i = 1; i < this.buffer1.length; i++) {
+            for(let j = 1; j < this.buffer1[0].length ; j++) {
                 this.tiles[i][j].setSprite(this.buffer1[i][j])
             }
         }
