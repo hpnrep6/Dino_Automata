@@ -32,6 +32,9 @@ export class Player extends Sprite2D{
         Bullet.initSpriteSheet();
     }
 
+    velX = 0;
+    velY = 0;
+
     isColliding = false;
 
     fireDelay = 0;
@@ -71,14 +74,22 @@ export class Player extends Sprite2D{
             speed /= 1.41;
         }
 
-        this.setLoc(Math.min(Math.max(this.getX() + speed * x, 0), Player.maxX), Math.min(Math.max(this.getY() + speed * y, 0), Player.maxY))
+        if(mX || mY) {
+            this.velX = speed * x;
+            this.velY = speed * y;
+        } else {
+            this.velX /= 1 + delta * 10;
+            this.velY /= 1 + delta * 10;
+        }
+
+        this.setLoc(Math.min(Math.max(this.getX() + this.velX, 0), Player.maxX), Math.min(Math.max(this.getY() + this.velY, 0), Player.maxY))
 
         if(isDown() && this.fireDelay <= 0) {
 
             let xTarg = getMouseX();
             let yTarg = getMouseY();
 
-            new Bullet(this.xLoc, this.yLoc, angleTo(this.xLoc, xTarg, this.yLoc, yTarg));
+            new Bullet(this.xLoc, this.yLoc, angleTo(this.xLoc, xTarg, this.yLoc, yTarg), this.velX, this.velY);
             this.fireDelay = Player.DELAY;
 
         } else {
@@ -128,11 +139,15 @@ class Bullet extends Sprite2D {
 
     damage = 20;
     hasCollided;
+    velX = 0
+    velY = 0
 
-    constructor(x, y, rot) {
+    constructor(x, y, rot, vX, vY) {
         super(null, TextureManager.player, x, y, Bullet.width, Bullet.height, rot, 10, Bullet.spritesheet);
 
-        new BulletCol(this)
+        new BulletCol(this);
+        this.velX = vX;
+        this.velY = vY;
     }
 
     _update(delta) {
@@ -142,6 +157,7 @@ class Bullet extends Sprite2D {
         }
 
         this.move(Bullet.SPEED * delta);
+        this.setLoc(this.xLoc + this.velX, this.yLoc + this.velY);
 
         if(this.getX() > Bullet.maxX || this.getX() < -Bullet.MAX_EXPAND ||
            this.getY() > Bullet.maxX || this.getY() < -Bullet.MAX_EXPAND) {
