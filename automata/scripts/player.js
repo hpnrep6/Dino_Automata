@@ -9,6 +9,7 @@ import { AARectangle } from "../../z0/physics/primitives/aarectcollider.js";
 
 export class Player extends Sprite2D{
     static SPEED = 100;
+    static DELAY = 0.2;
 
     static width = 50;
     static height = 50;
@@ -33,7 +34,7 @@ export class Player extends Sprite2D{
 
     isColliding = false;
 
-    firing = false;
+    fireDelay = 0;
 
     constructor(x, y) {
         super(null, TextureManager.player, x, y, Player.width, Player.height, 0, 10, Player.spritesheet);
@@ -72,16 +73,16 @@ export class Player extends Sprite2D{
 
         this.setLoc(Math.min(Math.max(this.getX() + speed * x, 0), Player.maxX), Math.min(Math.max(this.getY() + speed * y, 0), Player.maxY))
 
-        if(isDown()) {
-            if(!this.firing) {
-                let xTarg = getMouseX();
-                let yTarg = getMouseY();
+        if(isDown() && this.fireDelay <= 0) {
 
-                new Bullet(this.xLoc, this.yLoc, angleTo(this.xLoc, xTarg, this.yLoc, yTarg));
-                this.firing = true;
-            }
+            let xTarg = getMouseX();
+            let yTarg = getMouseY();
+
+            new Bullet(this.xLoc, this.yLoc, angleTo(this.xLoc, xTarg, this.yLoc, yTarg));
+            this.fireDelay = Player.DELAY;
+
         } else {
-            this.firing = false;
+            this.fireDelay -= delta;
         }
 
         if(this.isColliding) {
