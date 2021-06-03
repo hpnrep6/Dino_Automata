@@ -33,6 +33,8 @@ export class Player extends Sprite2D{
 
     isColliding = false;
 
+    firing = false;
+
     constructor(x, y) {
         super(null, TextureManager.player, x, y, Player.width, Player.height, 0, 10, Player.spritesheet);
 
@@ -71,10 +73,15 @@ export class Player extends Sprite2D{
         this.setLoc(Math.min(Math.max(this.getX() + speed * x, 0), Player.maxX), Math.min(Math.max(this.getY() + speed * y, 0), Player.maxY))
 
         if(isDown()) {
-            let xTarg = getMouseX();
-            let yTarg = getMouseY();
+            if(!this.firing) {
+                let xTarg = getMouseX();
+                let yTarg = getMouseY();
 
-            new Bullet(this.xLoc, this.yLoc, angleTo(this.xLoc, xTarg, this.yLoc, yTarg))
+                new Bullet(this.xLoc, this.yLoc, angleTo(this.xLoc, xTarg, this.yLoc, yTarg));
+                this.firing = true;
+            }
+        } else {
+            this.firing = false;
         }
 
         if(this.isColliding) {
