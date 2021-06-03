@@ -51,10 +51,10 @@ var lastUpdateTime = 0;
 var delta = 0;
 
 const loop = (time) => {
-console.time()
+//console.time()
     // Start scene update
     tree._update(getDelta(time));
-console.timeEnd()
+//console.timeEnd()
     // Callback to loop on the next update frame
     window.requestAnimationFrame(loop);
 }

@@ -11,6 +11,21 @@ import { CircleCollider } from './z0/physics/primitives/circlecollider.js';
 import { AudioManager } from './z0/audio/audiomanager.js';
 import { Grid, Tile } from './automata/scripts/grid.js';
 import { Player } from './automata/scripts/player.js';
+import { Dino } from './automata/scripts/dino.js';
+
+/**
+ * Collider layers:
+ * 
+ * Layer [0, 1]
+ * Dinosaur
+ * 
+ * Mask [0]
+ * Player
+ * 
+ * Mask[1]
+ * Bullet
+ * 
+ */
 
 let canvas = document.querySelector('canvas');
 
@@ -54,14 +69,16 @@ export class Main extends Scene {
     
     grid;
     player;
+    dino;
 
     init() {
 
         Grid.init();
         Player.initSpriteSheet();
+        Dino.initSpriteSheet();
         this.grid = new Grid();
         this.player = new Player(200, 200)
-
+        this.dino = new Dino(400, 400)
     }
 
     c = 0;
@@ -85,7 +102,7 @@ export class Main extends Scene {
 
         this.grid.updateGraphics()
 
-        if(Key.isKeyDown('i') ) {
+        if(Key.isKeyDown('i') || true ) {
             return
         }
 
