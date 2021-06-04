@@ -6,13 +6,17 @@ import { isKeyDown } from "../../z0/input/key.js";
 import *  as VAR from '../../z0/var.js'
 import { angleTo } from "../../z0/math/math2d.js";
 import { AARectangle } from "../../z0/physics/primitives/aarectcollider.js";
+import { Main } from "../../index.js";
 
 export class Player extends Sprite2D{
     static SPEED = 100;
     static DELAY = 0.2;
 
-    static width = 50;
-    static height = 50;
+    static col_width = 25;
+    static col_height = 25;
+
+    static width = 25;
+    static height = 25;
 
     static spritesheet;
 
@@ -39,10 +43,16 @@ export class Player extends Sprite2D{
 
     fireDelay = 0;
 
+    lastX = 0;
+    lastY = 0;
+
     constructor(x, y) {
         super(null, TextureManager.player, x, y, Player.width, Player.height, 0, 10, Player.spritesheet);
 
         new PlayerCol(this);
+
+        this.lastX = this.xLoc;
+        this.lastY = this.yLoc;
     }
 
     _update(delta) {
@@ -82,7 +92,7 @@ export class Player extends Sprite2D{
             this.velY /= 1 + delta * 10;
         }
 
-        this.setLoc(Math.min(Math.max(this.getX() + this.velX, 0), Player.maxX), Math.min(Math.max(this.getY() + this.velY, 0), Player.maxY))
+        this.setLoc(Math.min(Math.max(this.getX() + this.velX, 0), Player.maxX), Math.min(Math.max(this.getY() + this.velY, 0), Player.maxY));
 
         if(isDown() && this.fireDelay <= 0) {
 
@@ -102,13 +112,32 @@ export class Player extends Sprite2D{
         } else {
             this.setRot(0)
         }
+
+        let intX = Math.floor(this.xLoc);
+        let intY = Math.floor(this.yLoc);
+        
+        // Only update if at new position
+
+        if(intX != this.lastX || intY != this.lastY) {
+            let grid = this.getParent().grid;
+            
+            if(!this.getParent().path.getTileAt(intX, intY)) {
+                grid.setValueAt(intX, intY, Math.floor(Math.random() * 151) % 4);
+                this.getParent().path.setAlpha(0.7)
+            } else {
+                this.getParent().path.setAlpha(1)
+            }
+
+            this.lastX = intX;
+            this.lastY = intY;
+        }
     }
 }
 
 export class PlayerCol extends AARectangle {
     parent;
     constructor(parent) {
-        super(parent, 0, 0, 0, Player.width, Player.height, [], [0]);
+        super(parent, 0, 0, 0, Player.col_width, Player.col_height, [], [0]);
         this.parent = parent;
     }
 
@@ -163,7 +192,7 @@ class Bullet extends Sprite2D {
            this.getY() > Bullet.maxX || this.getY() < -Bullet.MAX_EXPAND) {
                this.removeSelf();
                return;
-           }
+        }
     }
 }
 

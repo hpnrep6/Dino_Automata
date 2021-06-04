@@ -8,13 +8,15 @@ import { angleTo } from "../../z0/math/math2d.js";
 import { Player } from "./player.js";
 import { AARectangle } from "../../z0/physics/primitives/aarectcollider.js";
 
-export class Dino extends Sprite2D{
+export class Dino extends Sprite2D {
     static SPEED = 20;
 
     static width = 50;
     static height = 50;
 
     static spritesheet;
+
+    static PATH_DESTROY_WIDTH = 30;
 
     collider;
 
@@ -28,10 +30,13 @@ export class Dino extends Sprite2D{
     }
 
     constructor(x, y) {
-        super(null, TextureManager.player, x, y, Player.width, Player.height, 0, 10, Player.spritesheet);
+        super(null, TextureManager.player, x, y, Dino.width, Dino.height, 0, 10, Player.spritesheet);
         this.collider = new DinoCol(this);
     }
 
+    lastX = 0;
+    lastY = 0;
+    
     _update(delta) {
         let speed = Dino.SPEED * delta;
 
@@ -44,6 +49,24 @@ export class Dino extends Sprite2D{
             this.setRot(0.78)
         } else {
             this.setRot(0)
+        }
+
+        let intX = Math.floor(this.xLoc);
+        let intY = Math.floor(this.yLoc);
+        
+        // Only update if at new position
+
+        if(intX != this.astX || intY != this.lastY) {
+            let path = this.getParent().path;
+            
+            for(let i = this.xLoc - Dino.PATH_DESTROY_WIDTH; i < this.xLoc + Dino.PATH_DESTROY_WIDTH; i += 15) {
+                for(let j = this.yLoc - Dino.PATH_DESTROY_WIDTH; j < this.yLoc + Dino.PATH_DESTROY_WIDTH; j += 15) {
+                    path.destroyPath(i, j)
+                }
+            }
+
+            this.lastX = intX;
+            this.lastY = intY;
         }
     }
 

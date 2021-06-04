@@ -135,6 +135,8 @@ export class Grid {
         
         this.buffer1[x][y] = v;
         this.buffer2[x][y] = v;
+
+        this.tiles[x][y].setSprite(this.buffer1[x][y]);
     }
 
     steps = 0;
@@ -305,11 +307,12 @@ export class GridPath {
     static spritesheet;
 
     static ALPHA_IDLE = 0.4;
-    
-    tiles = [];
 
-    xLoc = 0;
-    yLoc = 0;
+    tiles = [];
+    alpha = 1;
+
+    xLoc = -Grid.size / 2;
+    yLoc = -Grid.size /2;
 
     width;
     height;
@@ -332,6 +335,59 @@ export class GridPath {
             }
         }
 
+    }
+
+    getTileAt(y, x) {
+        x -= this.xLoc;
+        y -= this.yLoc;
+
+        x /= Grid.size;
+        y /= Grid.size;
+
+        x += .5;
+        y += .5;
+
+        x = Math.floor(x);
+        y = Math.floor(y);
+
+        if(x < 1 || x >= Grid.width) return;
+        if(y < 1 || y >= Grid.height) return;
+        
+        return this.tiles[x][y];
+    }
+
+    setAlpha(a) { 
+        if(this.alpha != a) {
+            for(let i = 0; i < this.tiles.length; i++) {
+                for(let j = 0; j < this.tiles[0].length; j++) {
+                    if(this.tiles[i][j])
+                        this.tiles[i][j].setAlpha(a);
+                    
+                }
+            }
+            this.alpha = a;
+        }
+    }
+
+    destroyPath(y, x) {
+        x -= this.xLoc;
+        y -= this.yLoc;
+
+        x /= Grid.size;
+        y /= Grid.size;
+
+        x += .5;
+        y += .5;
+
+        x = Math.floor(x);
+        y = Math.floor(y);
+
+        if(x < 1 || x >= Grid.width) return;
+        if(y < 1 || y >= Grid.height) return;
+        
+        if(this.tiles[x][y] != undefined)
+            this.tiles[x][y].setVisible(false);
+            this.tiles[x][y] = undefined;
     }
 }
 

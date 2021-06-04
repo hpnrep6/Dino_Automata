@@ -41,7 +41,7 @@ export class Main extends Scene {
     fungus = [];
 
     constructor() {
-        super(450);
+        super(20000);
     }
 
     _start() {
@@ -66,9 +66,9 @@ export class Main extends Scene {
                 drawCanvas.width = loaded[2].width;
                 drawCanvas.height = loaded[2].height;
                 drawContext.drawImage(loaded[2], 0, 0, loaded[2].width, loaded[2].height);
-                let map = drawContext.getImageData(0, 0, drawCanvas.width, drawCanvas.height).data
+                this.map = drawContext.getImageData(0, 0, drawCanvas.width, drawCanvas.height).data
 
-                this.init(map);
+                this.init();
 
                 z0._startUpdates();
             });
@@ -76,13 +76,14 @@ export class Main extends Scene {
             this.init();
         }
     }
-    
+
+    map;
     grid;
     player;
     dino;
     path;
 
-    init(map) {
+    init() {
 
         Grid.init();
         GridPath.init();
@@ -93,7 +94,7 @@ export class Main extends Scene {
         this.grid = new Grid();
         this.player = new Player(200, 200)
         this.dino = new Dino(400, 400)
-        this.path = new GridPath(map)
+        this.path = new GridPath(this.map)
     }
 
     c = 0;
@@ -103,18 +104,18 @@ export class Main extends Scene {
 
         this.setBackgroundColour(125 / 255 + off, 73 / 255 + off, 21 / 255 + off, 1);
 
-        let x = getMouseX()
-        let y = getMouseY()
+        // let x = getMouseX()
+        // let y = getMouseY()
 
-        let r = 50;
+        // let r = 50;
 
-        for(let i = x - r; i < x + r; i += Grid.size) {
-            for(let j = y - r; j < y + r; j += Grid.size) {
-                this.grid.setValueAt(i, j, 0);
-            }
-        }
+        // for(let i = x - r; i < x + r; i += Grid.size) {
+        //     for(let j = y - r; j < y + r; j += Grid.size) {
+        //         this.grid.setValueAt(i, j, 0);
+        //     }
+        // }
 
-        this.grid.updateGraphics()
+        //this.grid.updateGraphics()
 
         if(Key.isKeyDown('i') || true ) {
             return
