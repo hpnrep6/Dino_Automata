@@ -52,8 +52,8 @@ export class Grid {
     constructor() {
         for(let i = 0; i < Grid.width; i++) {
             this.tiles.push([])
-            this.buffer1[i] = [Grid.height];
-            this.buffer2[i] = [Grid.height];
+            this.buffer1[i] = [];
+            this.buffer2[i] = [];
 
             for(let j = 0; j < Grid.height; j++) {
                 this.tiles[i][j] = new Tile(this.xLoc + i * Grid.size, this.yLoc + j * Grid.size)
@@ -298,5 +298,55 @@ export class Grid {
                 this.tiles[i][j].setSprite(this.buffer1[i][j])
             }
         }
+    }
+}
+
+export class GridPath {
+    static spritesheet;
+
+    static ALPHA_IDLE = 0.4;
+    
+    tiles = [];
+
+    xLoc = 0;
+    yLoc = 0;
+
+    width;
+    height;
+
+    static init() {
+        this.width = VAR.canvas.width / Grid.size + Grid.size;
+        this.height = VAR.canvas.height / Grid.size + Grid.size;
+    }
+
+    constructor(imageData) {
+        const WIDTH = 4;
+        let index = 0;
+
+        for(let i = 0, h = 0; i < Grid.height; i++, h++) {
+            this.tiles.push([])
+
+            for(let j = 0, w = 0; j < Grid.width; j++, w++) {
+                this.tiles[i][j] = imageData[index] == 0 ? new Path(this.xLoc + w * Grid.size, this.yLoc + h * Grid.size) : undefined;
+                index += WIDTH;
+            }
+        }
+
+    }
+}
+
+
+export class Path extends Sprite2D {
+    static spriteSheet;
+
+    static initSpriteSheet() {
+        this.spriteSheet = new SpriteSheet(TextureManager.sprites);
+
+        this.spriteSheet.createFrame(125,125,32,32);
+    }
+    
+    constructor(x, y) {
+        super(null, TextureManager.sprites, x, y, Grid.size, Grid.size, 0, 5, Path.spriteSheet)
+
     }
 }

@@ -118,7 +118,7 @@ export class PlayerCol extends AARectangle {
 }
 
 class Bullet extends Sprite2D {
-    static SPEED = 200;
+    static SPEED = 500;
     static MAX_EXPAND = 20;
 
     static width = 5;

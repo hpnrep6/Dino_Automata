@@ -9,7 +9,7 @@ import { distanceSquared } from './z0/math/math2d.js';
 import { ShaderSprite2D } from './z0/graphics/shadersprite2d.js';
 import { CircleCollider } from './z0/physics/primitives/circlecollider.js';
 import { AudioManager } from './z0/audio/audiomanager.js';
-import { Grid, Tile } from './automata/scripts/grid.js';
+import { Grid, Tile, GridPath, Path } from './automata/scripts/grid.js';
 import { Player } from './automata/scripts/player.js';
 import { Dino } from './automata/scripts/dino.js';
 
@@ -29,6 +29,10 @@ import { Dino } from './automata/scripts/dino.js';
 
 let canvas = document.querySelector('canvas');
 
+let drawCanvas = document.createElement('canvas');
+
+let drawContext = drawCanvas.getContext('2d');
+
 z0._init(canvas);
 
 export class Main extends Scene {
@@ -45,8 +49,9 @@ export class Main extends Scene {
         if(!Main.loaded) {
             let a1 = loadImage('./automata/sprites/ss.png');
             let a2 = loadImage('./automata/sprites/player.png');
+            let a3 = loadImage('./automata/sprites/map.png')
 
-            Promise.all([a1, a2]).then( (loaded) => {
+            Promise.all([a1, a2, a3]).then( (loaded) => {
                 TextureManager.sprites = TextureManager.addTexture(loaded[0]);
                 TextureManager.player = TextureManager.addTexture(loaded[1]);
 
@@ -58,7 +63,12 @@ export class Main extends Scene {
 
                 AudioManager.next = AudioManager.createAudio('./automata/audio/pop.flac', 0.4);
 
-                this.init();
+                drawCanvas.width = loaded[2].width;
+                drawCanvas.height = loaded[2].height;
+                drawContext.drawImage(loaded[2], 0, 0, loaded[2].width, loaded[2].height);
+                let map = drawContext.getImageData(0, 0, drawCanvas.width, drawCanvas.height).data
+
+                this.init(map);
 
                 z0._startUpdates();
             });
@@ -70,15 +80,20 @@ export class Main extends Scene {
     grid;
     player;
     dino;
+    path;
 
-    init() {
+    init(map) {
 
         Grid.init();
+        GridPath.init();
         Player.initSpriteSheet();
         Dino.initSpriteSheet();
+        Path.initSpriteSheet();
+        
         this.grid = new Grid();
         this.player = new Player(200, 200)
         this.dino = new Dino(400, 400)
+        this.path = new GridPath(map)
     }
 
     c = 0;
@@ -87,7 +102,6 @@ export class Main extends Scene {
         let off = Math.cos(z0.getElapsedTime() / 1000) * 0.1;
 
         this.setBackgroundColour(125 / 255 + off, 73 / 255 + off, 21 / 255 + off, 1);
-
 
         let x = getMouseX()
         let y = getMouseY()
@@ -127,3 +141,5 @@ function loadImage(url) {
         image.src = url;
     })
 }
+
+// 133 by 108
