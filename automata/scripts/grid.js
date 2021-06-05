@@ -350,8 +350,8 @@ export class GridPath {
         x = Math.floor(x);
         y = Math.floor(y);
 
-        if(x < 1 || x >= Grid.width) return;
-        if(y < 1 || y >= Grid.height) return;
+        if(x < 0 || x >= Grid.height) return;
+        if(y < 0 || y >= Grid.width) return;
         
         return this.tiles[x][y];
     }
@@ -382,9 +382,9 @@ export class GridPath {
         x = Math.floor(x);
         y = Math.floor(y);
 
-        if(x < 1 || x >= Grid.width) return;
-        if(y < 1 || y >= Grid.height) return;
-        
+        if(x < 0 || x >= Grid.height) return;
+        if(y < 0 || y >= Grid.width) return;
+
         if(this.tiles[x][y] != undefined)
             this.tiles[x][y].setVisible(false);
             this.tiles[x][y] = undefined;

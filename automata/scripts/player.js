@@ -10,7 +10,7 @@ import { Main } from "../../index.js";
 
 export class Player extends Sprite2D{
     static SPEED = 100;
-    static DELAY = 1;
+    static DELAY = 0.1;
 
     static col_width = 25;
     static col_height = 25;
@@ -51,6 +51,8 @@ export class Player extends Sprite2D{
         Bullet.initSpriteSheet();
     }
 
+    hp = 200;
+
     velX = 0;
     velY = 0;
 
@@ -70,6 +72,9 @@ export class Player extends Sprite2D{
 
     pool = [];
 
+    healthbar;
+    damageTimer = 1;
+
     constructor(x, y) {
         super(null, TextureManager.player, x, y, Player.width * 2, Player.height, 0, 10, Player.spritesheet);
 
@@ -77,6 +82,8 @@ export class Player extends Sprite2D{
 
         this.lastX = this.xLoc;
         this.lastY = this.yLoc;
+
+        this.healthbar = new Healthbar(this, -35, 50, 5, this.hp);
     }
 
     _update(delta) {
@@ -142,10 +149,16 @@ export class Player extends Sprite2D{
         } else {
             this.fireDelay -= delta;
         }
-
+        
+        this.damageTimer -= delta;
         if(this.isColliding) {
             this.setSprite(9)
             this.isColliding = false;
+            if(this.damageTimer < 0) {
+                this.hp -= 50;
+                this.healthbar.setHP(this.hp);
+                this.damageTimer = 2;
+            }
         }
 
         let intX = Math.floor(this.xLoc);
@@ -189,6 +202,10 @@ export class Player extends Sprite2D{
         }
        
         this.pool.push(new Bullet(this.xLoc, this.yLoc, angleTo(this.xLoc, xTarg, this.yLoc, yTarg), this.velX, this.velY));
+    }
+
+    end() {
+
     }
 }
 
@@ -284,5 +301,28 @@ export class BulletCol extends AARectangle {
         if(!this.parent.hasCollided)
             body.damage(30);
         this.parent.hasCollided = true;
+    }
+}
+
+export class Healthbar extends Sprite2D {
+    static spritesheet;
+
+    static initSpriteSheet() {
+        this.spritesheet = new SpriteSheet(TextureManager.player);
+        this.spritesheet.createFrame(510, 2, 2, 2);
+    }
+
+    hpFull;
+    width;
+    constructor(parent, yOff, w, h, hp) {
+        super(parent, TextureManager.player, 0, yOff, w, h, 0, 12, Healthbar.spritesheet);
+        this.hpFull = hp;
+        this.width = w;
+    }
+
+    setHP(val) {
+        let mult = val / this.hpFull;
+
+        this.setWidth(this.width * mult);
     }
 }

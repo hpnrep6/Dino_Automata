@@ -10,7 +10,7 @@ import { ShaderSprite2D } from './z0/graphics/shadersprite2d.js';
 import { CircleCollider } from './z0/physics/primitives/circlecollider.js';
 import { AudioManager } from './z0/audio/audiomanager.js';
 import { Grid, Tile, GridPath, Path } from './automata/scripts/grid.js';
-import { Player } from './automata/scripts/player.js';
+import { Player, Healthbar } from './automata/scripts/player.js';
 import { Dino } from './automata/scripts/dino.js';
 
 /**
@@ -90,10 +90,11 @@ export class Main extends Scene {
         Player.initSpriteSheet();
         Dino.initSpriteSheet();
         Path.initSpriteSheet();
+        Healthbar.initSpriteSheet();
         
         this.grid = new Grid();
-        this.player = new Player(200, 200)
-        this.dino = new Dino(400, 400)
+        this.player = new Player(475, 50)
+        this.dino = new Dino(920, 900)
         this.path = new GridPath(this.map)
     }
 
@@ -125,6 +126,11 @@ export class Main extends Scene {
         this.grid.update();
         this.grid.updateGraphics();
         this.c++;
+    }
+
+    triggerEnd() {
+        this.player.end();
+        this.dino.end();
     }
 }
 

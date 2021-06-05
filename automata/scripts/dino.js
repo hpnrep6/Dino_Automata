@@ -5,11 +5,12 @@ import { getMouseX, getMouseY, isDown } from "../../z0/input/mouse.js";
 import { isKeyDown } from "../../z0/input/key.js";
 import *  as VAR from '../../z0/var.js'
 import { angleTo, distance } from "../../z0/math/math2d.js";
-import { Player } from "./player.js";
+import { Player, Healthbar } from "./player.js";
 import { AARectangle } from "../../z0/physics/primitives/aarectcollider.js";
+import { Main } from "../../index.js";
 
 export class Dino extends Sprite2D {
-    static SPEED = 40;
+    static SPEED = 60;
 
     static width = 150;
     static height = 300;
@@ -20,7 +21,7 @@ export class Dino extends Sprite2D {
 
     collider;
 
-    hp = 200;
+    hp = 1500;
 
     hurtCounter = 0;
     stunCounter = 0;
@@ -28,6 +29,7 @@ export class Dino extends Sprite2D {
     velX = 0;
     velY = 0;
 
+    healthbar;
 
     static initSpriteSheet() {
         this.spritesheet = new SpriteSheet(TextureManager.player);
@@ -46,8 +48,10 @@ export class Dino extends Sprite2D {
     }
 
     constructor(x, y) {
-        super(null, TextureManager.player, x, y, Dino.width * 2, Dino.height, 0, 10, Dino.spritesheet);
+        super(null, TextureManager.player, x, y, Dino.width * 2, Dino.height, 0, 11, Dino.spritesheet);
         this.collider = new DinoCol(this);
+
+        this.healthbar = new Healthbar(this, -100, 200, 10, this.hp)
     }
 
     lastX = 0;
@@ -63,7 +67,7 @@ export class Dino extends Sprite2D {
     dead = false;
     dieOnce = false;
     vel = 0;
-    
+
     _update(delta) {
         this.animTimer -= delta;
 
@@ -83,6 +87,8 @@ export class Dino extends Sprite2D {
                 this.dying -= delta;
                 if(this.dying <= 0) {
                     this.dead = true;
+                    this.removeChild(this.collider)
+                    this.getParent().triggerEnd();
                 }
                 return;
             }
@@ -155,20 +161,26 @@ export class Dino extends Sprite2D {
         if(this.dead) return;
 
         this.hp -= dmg;
-
+        
         if(this.hp < 0) {
             this.dying = 1;
         }
 
         this.hurtCounter = 0.5;
         this.stunCounter = 0.2;
+
+        this.healthbar.setHP(Math.max(this.hp, 0))
+    }
+
+    end() {
+        
     }
 }
 
 export class DinoCol extends AARectangle {
     parent;
     constructor(parent) {
-        super(parent, 0, 0, 0, Dino.width / 2, Dino.height / 2, [0, 1], []);
+        super(parent, 0, 50, 0, Dino.width / 2, Dino.height - 75, [0, 1], []);
         this.parent = parent;
     }
 
