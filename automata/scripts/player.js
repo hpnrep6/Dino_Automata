@@ -46,6 +46,8 @@ export class Player extends Sprite2D{
     lastX = 0;
     lastY = 0;
 
+    pool = [];
+
     constructor(x, y) {
         super(null, TextureManager.player, x, y, Player.width, Player.height, 0, 10, Player.spritesheet);
 
@@ -99,7 +101,9 @@ export class Player extends Sprite2D{
             let xTarg = getMouseX();
             let yTarg = getMouseY();
 
-            new Bullet(this.xLoc, this.yLoc, angleTo(this.xLoc, xTarg, this.yLoc, yTarg), this.velX, this.velY);
+
+            this.createBullet(xTarg, yTarg);
+
             this.fireDelay = Player.DELAY;
 
         } else {
@@ -131,6 +135,23 @@ export class Player extends Sprite2D{
             this.lastX = intX;
             this.lastY = intY;
         }
+    }
+
+    /**
+     * Bullet Pooling system
+     * @param {Number} xTarg 
+     * @param {Number} yTarg 
+     */
+    createBullet(xTarg, yTarg) {
+        console.log(this.pool.length)
+        for(let i = 0; i < this.pool.length; i++) {
+            if(this.pool[i].inactive) {
+                this.pool[i].init(this.xLoc, this.yLoc, angleTo(this.xLoc, xTarg, this.yLoc, yTarg), this.velX, this.velY);
+                return;
+            }
+        }
+       
+        this.pool.push(new Bullet(this.xLoc, this.yLoc, angleTo(this.xLoc, xTarg, this.yLoc, yTarg), this.velX, this.velY));
     }
 }
 
@@ -171,6 +192,8 @@ class Bullet extends Sprite2D {
     velX = 0
     velY = 0
 
+    inactive = false;
+
     constructor(x, y, rot, vX, vY) {
         super(null, TextureManager.player, x, y, Bullet.width, Bullet.height, rot, 10, Bullet.spritesheet);
 
@@ -179,9 +202,20 @@ class Bullet extends Sprite2D {
         this.velY = vY;
     }
 
+    init(x, y, rot, vX, vY) {
+        this.velX = vX;
+        this.velY = vY;
+
+        this.setRot(rot);
+
+        this.setLoc(x, y);
+
+        this.inactive = false;
+    }
+
     _update(delta) {
-        if(this.hasCollided) {
-            this.removeSelf();
+        if(this.hasCollided || this.inactive) {
+            this.destroy();
             return;
         }
 
@@ -190,9 +224,15 @@ class Bullet extends Sprite2D {
 
         if(this.getX() > Bullet.maxX || this.getX() < -Bullet.MAX_EXPAND ||
            this.getY() > Bullet.maxX || this.getY() < -Bullet.MAX_EXPAND) {
-               this.removeSelf();
+               this.destroy();
                return;
         }
+    }
+
+    destroy() {
+        this.setLoc(-500, -500);
+        this.inactive = true;
+        this.hasCollided = false;
     }
 }
 

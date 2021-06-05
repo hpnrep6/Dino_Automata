@@ -117,12 +117,13 @@ export class Main extends Scene {
 
         //this.grid.updateGraphics()
 
-        if(Key.isKeyDown('i') || true ) {
-            return
-        }
+        if(Key.isKeyDown('i') ) {
+            
+        } else return
 
         if(this.c > 600) return;
         this.grid.update();
+        this.grid.updateGraphics();
         this.c++;
     }
 }
