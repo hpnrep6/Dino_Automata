@@ -10,13 +10,13 @@ import { Main } from "../../index.js";
 
 export class Player extends Sprite2D{
     static SPEED = 100;
-    static DELAY = 0.2;
+    static DELAY = 1;
 
     static col_width = 25;
     static col_height = 25;
 
-    static width = 25;
-    static height = 25;
+    static width = 50;
+    static height = 50;
 
     static spritesheet;
 
@@ -28,7 +28,22 @@ export class Player extends Sprite2D{
 
     static initSpriteSheet() {
         this.spritesheet = new SpriteSheet(TextureManager.player);
-        this.spritesheet.createFrame(20,20, 2, 2);
+        
+        let size = 26;
+       
+        for(let i = 0; i < 8; i++) {
+            let x = 0;
+            let y = i * size;
+  
+            this.spritesheet.createFrame(x, y, size * 2, size);
+        }
+
+        for(let i = 0; i < 6; i++) {
+            let x = size * 2;
+            let y = i * size;
+
+            this.spritesheet.createFrame(x, y, size * 2, size);
+        }
 
         this.maxX = VAR.canvas.width;
         this.maxY = VAR.canvas.height;
@@ -39,6 +54,11 @@ export class Player extends Sprite2D{
     velX = 0;
     velY = 0;
 
+    animTimer = 0;
+    animIndex = 0;
+    animMax = 8;
+    animStart = 0;
+
     isColliding = false;
 
     fireDelay = 0;
@@ -46,10 +66,12 @@ export class Player extends Sprite2D{
     lastX = 0;
     lastY = 0;
 
+    faceLeft = false;
+
     pool = [];
 
     constructor(x, y) {
-        super(null, TextureManager.player, x, y, Player.width, Player.height, 0, 10, Player.spritesheet);
+        super(null, TextureManager.player, x, y, Player.width * 2, Player.height, 0, 10, Player.spritesheet);
 
         new PlayerCol(this);
 
@@ -58,6 +80,17 @@ export class Player extends Sprite2D{
     }
 
     _update(delta) {
+
+        this.animTimer -= delta;
+        if(this.animTimer < 0) {
+            this.animIndex++;
+            this.animIndex %= this.animMax;
+
+            this.setSprite(this.animStart + this.animIndex);
+
+            this.animTimer = 0.1;
+        }
+
         Player.playerX = this.xLoc;
         Player.playerY = this.yLoc;
 
@@ -111,10 +144,8 @@ export class Player extends Sprite2D{
         }
 
         if(this.isColliding) {
-            this.setRot(0.78)
+            this.setSprite(9)
             this.isColliding = false;
-        } else {
-            this.setRot(0)
         }
 
         let intX = Math.floor(this.xLoc);
@@ -125,8 +156,8 @@ export class Player extends Sprite2D{
         if(intX != this.lastX || intY != this.lastY) {
             let grid = this.getParent().grid;
             
-            if(!this.getParent().path.getTileAt(intX, intY)) {
-                grid.setValueAt(intX, intY, Math.floor(Math.random() * 151) % 4);
+            if(!this.getParent().path.getTileAt(intX, intY + 20)) {
+                grid.setValueAt(intX, intY + 20, Math.floor(Math.random() * 151) % 4);
                 this.getParent().path.setAlpha(0.7)
             } else {
                 this.getParent().path.setAlpha(1)
@@ -134,6 +165,12 @@ export class Player extends Sprite2D{
 
             this.lastX = intX;
             this.lastY = intY;
+        }
+
+        if(this.velX < 0) {
+            this.setSize(-Player.width * 2, 50)
+        } else if(this.velX > 0) {
+            this.setSize(Player.width * 2, 50)
         }
     }
 
@@ -143,7 +180,7 @@ export class Player extends Sprite2D{
      * @param {Number} yTarg 
      */
     createBullet(xTarg, yTarg) {
-        console.log(this.pool.length)
+
         for(let i = 0; i < this.pool.length; i++) {
             if(this.pool[i].inactive) {
                 this.pool[i].init(this.xLoc, this.yLoc, angleTo(this.xLoc, xTarg, this.yLoc, yTarg), this.velX, this.velY);
@@ -211,6 +248,7 @@ class Bullet extends Sprite2D {
         this.setLoc(x, y);
 
         this.inactive = false;
+        this.hasCollided = false;
     }
 
     _update(delta) {
@@ -232,7 +270,6 @@ class Bullet extends Sprite2D {
     destroy() {
         this.setLoc(-500, -500);
         this.inactive = true;
-        this.hasCollided = false;
     }
 }
 
@@ -244,7 +281,8 @@ export class BulletCol extends AARectangle {
     }
 
     _onCollision(body) {
-        body.damage(body.damage);
+        if(!this.parent.hasCollided)
+            body.damage(30);
         this.parent.hasCollided = true;
     }
 }
