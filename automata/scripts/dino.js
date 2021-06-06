@@ -154,7 +154,6 @@ export class Dino extends Sprite2D {
             this.setSize(Dino.width * 2, Dino.height)
  
         }     
-        console.log(this.hp)
     }
 
     damage(dmg) {

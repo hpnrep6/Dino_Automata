@@ -9,7 +9,7 @@ import { distanceSquared } from './z0/math/math2d.js';
 import { ShaderSprite2D } from './z0/graphics/shadersprite2d.js';
 import { CircleCollider } from './z0/physics/primitives/circlecollider.js';
 import { AudioManager } from './z0/audio/audiomanager.js';
-import { Grid, Tile, GridPath, Path } from './automata/scripts/grid.js';
+import { Grid, Tile, GridPath, Path, GridGroup, ElectionText } from './automata/scripts/grid.js';
 import { Player, Healthbar } from './automata/scripts/player.js';
 import { Dino } from './automata/scripts/dino.js';
 
@@ -36,6 +36,8 @@ let drawContext = drawCanvas.getContext('2d');
 z0._init(canvas);
 
 export class Main extends Scene {
+    static NUM_ITER = 1000;
+
     static loaded = false;
 
     fungus = [];
@@ -49,13 +51,13 @@ export class Main extends Scene {
         if(!Main.loaded) {
             let a1 = loadImage('./automata/sprites/ss.png');
             let a2 = loadImage('./automata/sprites/player.png');
-            let a3 = loadImage('./automata/sprites/map.png')
+            let a3 = loadImage('./automata/sprites/map.png');
+            let a4 = loadImage('./automata/fonts/fontw.png');
 
-            Promise.all([a1, a2, a3]).then( (loaded) => {
+            Promise.all([a1, a2, a3, a4]).then( (loaded) => {
                 TextureManager.sprites = TextureManager.addTexture(loaded[0]);
                 TextureManager.player = TextureManager.addTexture(loaded[1]);
-
-                Tile.initSpriteSheet(TextureManager.sprites);
+                TextureManager.font = TextureManager.addTexture(loaded[3]);
 
                 AudioManager.background = AudioManager.createAudio('./automata/audio/red.ogg', 0.15);
 
@@ -66,7 +68,7 @@ export class Main extends Scene {
                 drawCanvas.width = loaded[2].width;
                 drawCanvas.height = loaded[2].height;
                 drawContext.drawImage(loaded[2], 0, 0, loaded[2].width, loaded[2].height);
-                this.map = drawContext.getImageData(0, 0, drawCanvas.width, drawCanvas.height).data
+                Main.map = drawContext.getImageData(0, 0, drawCanvas.width, drawCanvas.height).data
 
                 this.init();
 
@@ -77,60 +79,67 @@ export class Main extends Scene {
         }
     }
 
-    map;
+    static map;
     grid;
     player;
     dino;
     path;
+    group;
 
     init() {
 
         Grid.init();
         GridPath.init();
+        GridGroup.init();
         Player.initSpriteSheet();
         Dino.initSpriteSheet();
         Path.initSpriteSheet();
         Healthbar.initSpriteSheet();
+        Tile.initSpriteSheet(TextureManager.sprites);
+        Path.initSpriteSheet()
         
         this.grid = new Grid();
         this.player = new Player(475, 50)
         this.dino = new Dino(920, 900)
-        this.path = new GridPath(this.map)
+        this.path = new GridPath(Main.map)
+        this.group = new GridGroup();
+
+        let t = new ElectionText(200, 200, 50)
+        t.setString('612')
     }
 
-    c = 0;
+    iterations = 0;
+    startedEnd = false;
+
+    static CHANGE = 5;
+
     _update(delta) {
 
         let off = Math.cos(z0.getElapsedTime() / 1000) * 0.1;
 
         this.setBackgroundColour(125 / 255 + off, 73 / 255 + off, 21 / 255 + off, 1);
 
-        // let x = getMouseX()
-        // let y = getMouseY()
+        if(!this.startedEnd) return;
 
-        // let r = 50;
+        if(this.iterations > Main.NUM_ITER) return;
 
-        // for(let i = x - r; i < x + r; i += Grid.size) {
-        //     for(let j = y - r; j < y + r; j += Grid.size) {
-        //         this.grid.setValueAt(i, j, 0);
-        //     }
-        // }
-
-        //this.grid.updateGraphics()
-
-        if(Key.isKeyDown('i') ) {
-            
-        } else return
-
-        if(this.c > 600) return;
         this.grid.update();
         this.grid.updateGraphics();
-        this.c++;
+        this.group.updateGraphics();
+        this.iterations++;
+        this.grid.iterations = this.iterations;
+
     }
 
     triggerEnd() {
         this.player.end();
         this.dino.end();
+
+        this.startAutomata()
+    }
+
+    startAutomata() {
+        this.startedEnd = true;
     }
 }
 

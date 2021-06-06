@@ -3,6 +3,8 @@ import { SpriteSheet } from '../../z0/graphics/spritesheet.js';
 import { Sprite2D } from '../../z0/graphics/sprite2d.js';
 import *  as VAR from '../../z0/var.js'
 import { TextureManager } from '../../z0/graphics/texturemanager.js';
+import { Module } from '../../z0/tree/module.js';
+import { BitmapText } from '../fonts/bitmaptext.js';
 
 export class Tile extends Sprite2D {
     static spriteSheet;
@@ -10,14 +12,15 @@ export class Tile extends Sprite2D {
     static initSpriteSheet(image) {
         this.spriteSheet = new SpriteSheet(image);
 
-        this.spriteSheet.createFrame(0,0,32,32);
-        this.spriteSheet.createFrame(32,32,32,32);
-        this.spriteSheet.createFrame(64,0,32,32);
-        this.spriteSheet.createFrame(64,64,32,32);
+        this.spriteSheet.createFrame(400,400,8,8);
+
+        for(let i = 0; i < 7; i++) {
+            this.spriteSheet.createFrame(i * 64, 0, 32, 32)
+        }
     }
     
-    constructor(x, y) {
-        super(null, TextureManager.sprites, x, y, Grid.size, Grid.size, 0, 5, Tile.spriteSheet)
+    constructor(x, y, parent, layer = 5, size = Grid.size) {
+        super(parent, TextureManager.sprites, x, y, size, size, 0, layer, Tile.spriteSheet)
 
     }
 }
@@ -28,14 +31,18 @@ export class Grid {
     static ALIVE_2 = 2;
     static ALIVE_3 = 3;
 
-    static size = 8;
+    static size = 10;
     static width;// = VAR.canvas.width / Grid.size + Grid.size;
     static height;// = VAR.canvas.height / Grid.size + Grid.size;
    
+    parent;
+
     static init() {
         this.width = VAR.canvas.width / Grid.size + Grid.size;
         this.height = VAR.canvas.height / Grid.size + Grid.size;
     }
+
+    static data;
 
     a_1 = 0;
     a_2 = 0;
@@ -49,72 +56,44 @@ export class Grid {
     xLoc = Grid.size / 2 - Grid.size;
     yLoc = Grid.size / 2 - Grid.size;
 
+    spriteOffset = 0;
+
+    iterations = 0;
+
     constructor() {
+        this.parent = new Module(null, 0, 0, 0)
         for(let i = 0; i < Grid.width; i++) {
             this.tiles.push([])
             this.buffer1[i] = [];
             this.buffer2[i] = [];
 
             for(let j = 0; j < Grid.height; j++) {
-                this.tiles[i][j] = new Tile(this.xLoc + i * Grid.size, this.yLoc + j * Grid.size)
+                this.tiles[i][j] = new Tile(this.xLoc + i * Grid.size, this.yLoc + j * Grid.size, this.parent)
+                this.tiles[i][j].setAlpha(0.5)
                 this.buffer1[i][j] = Grid.DEAD;
                 this.buffer2[i][j] = Grid.DEAD;
             }
         }
-
-        // this.buffer1[25][25] = Grid.ALIVE_1;
-
-        // let x = 23, y = 25
+        // let x = 66, y = 44
         // this.buffer1[x+1][y+1] = Grid.ALIVE_1
         // this.buffer1[x+1][y+2] = Grid.ALIVE_1
         // this.buffer1[x+2][y+1] = Grid.ALIVE_1
         // this.buffer1[x+3][y+1] = Grid.ALIVE_1
         // this.buffer1[x+2][y+3] = Grid.ALIVE_1
-        let x = 66, y = 44
-        this.buffer1[x+1][y+1] = Grid.ALIVE_1
-        this.buffer1[x+1][y+2] = Grid.ALIVE_1
-        this.buffer1[x+2][y+1] = Grid.ALIVE_1
-        this.buffer1[x+3][y+1] = Grid.ALIVE_1
-        this.buffer1[x+2][y+3] = Grid.ALIVE_1
 
-        //  x = 55, y = 53
-        // this.buffer1[x+1][y+1] = Grid.ALIVE_2
-        // this.buffer1[x+1][y+2] = Grid.ALIVE_2
-        // this.buffer1[x+2][y+1] = Grid.ALIVE_2
-        // this.buffer1[x+3][y+1] = Grid.ALIVE_2
-        // this.buffer1[x+2][y+3] = Grid.ALIVE_2
-        // x = 56, y = 55
+        // x = 68, y = 69
         // this.buffer1[x+1][y+1] = Grid.ALIVE_2
         // this.buffer1[x+1][y+2] = Grid.ALIVE_2
         // this.buffer1[x+2][y+1] = Grid.ALIVE_2
         // this.buffer1[x+3][y+1] = Grid.ALIVE_2
         // this.buffer1[x+2][y+3] = Grid.ALIVE_2
 
-        x = 68, y = 69
-        this.buffer1[x+1][y+1] = Grid.ALIVE_2
-        this.buffer1[x+1][y+2] = Grid.ALIVE_2
-        this.buffer1[x+2][y+1] = Grid.ALIVE_2
-        this.buffer1[x+3][y+1] = Grid.ALIVE_2
-        this.buffer1[x+2][y+3] = Grid.ALIVE_2
-        // x =67, y = 25
+        // x =63, y = 62
         // this.buffer1[x+1][y+1] = Grid.ALIVE_3
         // this.buffer1[x+1][y+2] = Grid.ALIVE_3
         // this.buffer1[x+2][y+1] = Grid.ALIVE_3
         // this.buffer1[x+3][y+1] = Grid.ALIVE_3
         // this.buffer1[x+2][y+3] = Grid.ALIVE_3
-        // x =69, y = 22
-        // this.buffer1[x+1][y+1] = Grid.ALIVE_3
-        // this.buffer1[x+1][y+2] = Grid.ALIVE_3
-        // this.buffer1[x+2][y+1] = Grid.ALIVE_3
-        // this.buffer1[x+3][y+1] = Grid.ALIVE_3
-        // this.buffer1[x+2][y+3] = Grid.ALIVE_3
-        x =63, y = 62
-        this.buffer1[x+1][y+1] = Grid.ALIVE_3
-        this.buffer1[x+1][y+2] = Grid.ALIVE_3
-        this.buffer1[x+2][y+1] = Grid.ALIVE_3
-        this.buffer1[x+3][y+1] = Grid.ALIVE_3
-        this.buffer1[x+2][y+3] = Grid.ALIVE_3
-
     }
 
     setValueAt(x, y, v) {
@@ -292,21 +271,92 @@ export class Grid {
         }
     
         this.buffer1 = next;
+        Grid.data = this.buffer1
     }
 
     updateGraphics() {
+        if(this.iterations > Main.CHANGE) {
+            this.spriteOffset = 4;
+        }
+
         for(let i = 1; i < this.buffer1.length; i++) {
             for(let j = 1; j < this.buffer1[0].length ; j++) {
-                this.tiles[i][j].setSprite(this.buffer1[i][j])
+                this.tiles[i][j].setSprite(this.buffer1[i][j] + this.spriteOffset)
             }
         }
     }
 }
 
+export class GridGroup {
+    static mult = 10
+    static size = Grid.size * GridGroup.mult;
+
+    parent;
+
+    tiles = [];
+    alpha = 1;
+
+    xLoc = -GridGroup.size / 2;
+    yLoc = -GridGroup.size /2;
+
+    static width;
+    static height;
+
+    static init() {
+        this.width = VAR.canvas.width / GridGroup.size + 1;
+        this.height = VAR.canvas.height / GridGroup.size + 1;
+    }
+
+    constructor() { 
+        this.parent = new Module(null, 0, 0, 0);
+
+        for(let i = 0; i < GridGroup.width; i++) {
+            this.tiles.push([])
+
+            for(let j = 0; j < GridGroup.height; j++) {
+                this.tiles[i][j] = new Tile(i * GridGroup.size + this.xLoc, j * GridGroup.size + this.yLoc, this.parent, 4, GridGroup.size - 1);
+            }
+        }
+    }
+
+    updateGraphics() {
+        let tiles = Grid.data;
+
+        for(let i = 0; i < GridGroup.width; i++) {
+            for(let j = 0; j < GridGroup.height; j++) {
+                let x = i * GridGroup.mult;
+                let y = j * GridGroup.mult;
+
+                let arr = [0,0,0,0]
+
+                for(let k = x; k < x + 10; k++) {
+                    for(let l = y; l < y + 10; l++) {
+                        arr[tiles[k][l] % 4]++;
+                    }
+                }
+
+                let max = 0;
+                let ind = 0;
+                for(let k = 1; k < arr.length; k++) {
+                    if(arr[k] > max) {
+                        max = arr[k]
+                        ind = k;
+                    }
+                }
+
+                this.tiles[i][j].setSprite(4+ ind)
+            }
+        }
+    }
+}
+
+
 export class GridPath {
     static spritesheet;
 
     static ALPHA_IDLE = 0.4;
+
+    parent;
 
     tiles = [];
     alpha = 1;
@@ -326,11 +376,12 @@ export class GridPath {
         const WIDTH = 4;
         let index = 0;
 
+        this.parent = new Module(null, 0, 0, 0)
         for(let i = 0, h = 0; i < Grid.height; i++, h++) {
             this.tiles.push([])
 
             for(let j = 0, w = 0; j < Grid.width; j++, w++) {
-                this.tiles[i][j] = imageData[index] == 0 ? new Path(this.xLoc + w * Grid.size, this.yLoc + h * Grid.size) : undefined;
+                this.tiles[i][j] = imageData[index] == 0 ? new Path(this.xLoc + w * Grid.size, this.yLoc + h * Grid.size, this.parent) : undefined;
                 index += WIDTH;
             }
         }
@@ -398,11 +449,18 @@ export class Path extends Sprite2D {
     static initSpriteSheet() {
         this.spriteSheet = new SpriteSheet(TextureManager.sprites);
 
-        this.spriteSheet.createFrame(125,125,32,32);
+        this.spriteSheet.createFrame(0,64,32,32);
+        this.spriteSheet.createFrame(64,64,32,32);
     }
     
-    constructor(x, y) {
-        super(null, TextureManager.sprites, x, y, Grid.size, Grid.size, 0, 5, Path.spriteSheet)
+    constructor(x, y, parent) {
+        super(parent, TextureManager.sprites, x, y, Grid.size, Grid.size, 0, 5, Path.spriteSheet)
+        this.setSprite(Math.floor((Math.random() * 12231) % 2));
+    }
+}
 
+export class ElectionText extends BitmapText {
+    constructor(x, y, size) {
+        super(null, x, y, TextureManager.font, 5, 7, size, size * (7/5), 14);
     }
 }

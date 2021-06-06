@@ -10,7 +10,7 @@ import { Main } from "../../index.js";
 
 export class Player extends Sprite2D{
     static SPEED = 100;
-    static DELAY = 0.1;
+    static DELAY = 0.01;
 
     static col_width = 25;
     static col_height = 25;
@@ -161,12 +161,11 @@ export class Player extends Sprite2D{
             }
         }
 
-        let intX = Math.floor(this.xLoc);
-        let intY = Math.floor(this.yLoc);
-        
+        let intX = this.xLoc;
+        let intY = this.yLoc;
         // Only update if at new position
 
-        if(intX != this.lastX || intY != this.lastY) {
+        if(Math.abs(intX - this.lastX) > 4 || Math.abs(intY - this.lastY) > 4) {
             let grid = this.getParent().grid;
             
             if(!this.getParent().path.getTileAt(intX, intY + 20)) {
