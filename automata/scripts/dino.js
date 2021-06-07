@@ -21,7 +21,7 @@ export class Dino extends Sprite2D {
 
     collider;
 
-    hp = 1500;
+    hp = 15; //1500
 
     hurtCounter = 0;
     stunCounter = 0;
@@ -69,6 +69,8 @@ export class Dino extends Sprite2D {
     vel = 0;
 
     _update(delta) {
+        delta = Math.min(delta, 0.5);
+
         this.animTimer -= delta;
 
         if(this.dying > 0) {

@@ -38,8 +38,8 @@ export class Grid {
     parent;
 
     static init() {
-        this.width = VAR.canvas.width / Grid.size + Grid.size;
-        this.height = VAR.canvas.height / Grid.size + Grid.size;
+        this.width = VAR.canvas.width / Grid.size + 2;
+        this.height = VAR.canvas.height / Grid.size + 2;
     }
 
     static data;
@@ -205,7 +205,8 @@ export class Grid {
 
                         // if(al < 1) {
                         //     next[i][j] = Grid.DEAD
-                        // } else if(al > 4) {
+                        // } 
+                        //else if(al > 4) {
                         //     next[i][j] = Grid.DEAD
                         // }
 
@@ -275,7 +276,7 @@ export class Grid {
     }
 
     updateGraphics() {
-        if(this.iterations > Main.CHANGE) {
+        if(this.iterations > Main.STAGE_2) {
             this.spriteOffset = 4;
         }
 
@@ -296,15 +297,15 @@ export class GridGroup {
     tiles = [];
     alpha = 1;
 
-    xLoc = -GridGroup.size / 2;
-    yLoc = -GridGroup.size /2;
+    xLoc = GridGroup.size / 2;
+    yLoc = GridGroup.size / 2;
 
     static width;
     static height;
 
     static init() {
-        this.width = VAR.canvas.width / GridGroup.size + 1;
-        this.height = VAR.canvas.height / GridGroup.size + 1;
+        this.width = VAR.canvas.width / GridGroup.size ;
+        this.height = VAR.canvas.height / GridGroup.size;
     }
 
     constructor() { 
@@ -314,7 +315,8 @@ export class GridGroup {
             this.tiles.push([])
 
             for(let j = 0; j < GridGroup.height; j++) {
-                this.tiles[i][j] = new Tile(i * GridGroup.size + this.xLoc, j * GridGroup.size + this.yLoc, this.parent, 4, GridGroup.size - 1);
+                this.tiles[i][j] = new Tile(i * GridGroup.size + this.xLoc, j * GridGroup.size + this.yLoc, this.parent, 4, GridGroup.size);
+                this.tiles[i][j].setAlpha(0.15)
             }
         }
     }
@@ -332,6 +334,7 @@ export class GridGroup {
                 for(let k = x; k < x + 10; k++) {
                     for(let l = y; l < y + 10; l++) {
                         arr[tiles[k][l] % 4]++;
+
                     }
                 }
 
@@ -345,6 +348,14 @@ export class GridGroup {
                 }
 
                 this.tiles[i][j].setSprite(4+ ind)
+            }
+        }
+    }
+
+    setAlpha(a) {
+        for(let i = 0; i < GridGroup.width; i++) {
+            for(let j = 0; j < GridGroup.height; j++) {
+                this.tiles[i][j].setAlpha(a);
             }
         }
     }
@@ -362,7 +373,7 @@ export class GridPath {
     alpha = 1;
 
     xLoc = -Grid.size / 2;
-    yLoc = -Grid.size /2;
+    yLoc = -Grid.size / 2;
 
     width;
     height;
