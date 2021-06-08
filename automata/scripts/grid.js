@@ -12,7 +12,7 @@ export class Tile extends Sprite2D {
     static initSpriteSheet(image) {
         this.spriteSheet = new SpriteSheet(image);
 
-        this.spriteSheet.createFrame(400,400,8,8);
+        this.spriteSheet.createFrame(400,400,1,1);
 
         for(let i = 0; i < 7; i++) {
             this.spriteSheet.createFrame(i * 64, 0, 32, 32)
@@ -362,12 +362,10 @@ export class GridGroup {
 }
 
 
-export class GridPath {
+export class GridPath extends Module{
     static spritesheet;
 
     static ALPHA_IDLE = 0.4;
-
-    parent;
 
     tiles = [];
     alpha = 1;
@@ -384,15 +382,15 @@ export class GridPath {
     }
 
     constructor(imageData) {
+        super(null, 0, 0, 0);
         const WIDTH = 4;
         let index = 0;
 
-        this.parent = new Module(null, 0, 0, 0)
         for(let i = 0, h = 0; i < Grid.height; i++, h++) {
             this.tiles.push([])
 
             for(let j = 0, w = 0; j < Grid.width; j++, w++) {
-                this.tiles[i][j] = imageData[index] == 0 ? new Path(this.xLoc + w * Grid.size, this.yLoc + h * Grid.size, this.parent) : undefined;
+                this.tiles[i][j] = imageData[index] == 0 ? new Path(this.xLoc + w * Grid.size, this.yLoc + h * Grid.size, this) : undefined;
                 index += WIDTH;
             }
         }
@@ -471,7 +469,28 @@ export class Path extends Sprite2D {
 }
 
 export class ElectionText extends BitmapText {
-    constructor(x, y, size) {
+    
+    constructor(x, y, size, index = 0) {
         super(null, x, y, TextureManager.font, 5, 7, size, size * (7/5), 14);
+
+        if(index < 0) return;
+
+        let s = new SpriteSheet(TextureManager.flag);
+
+        s.createFrame(0, 128 * (index * 2), 256, 128);
+
+        let xx = 100, yy = 50;
+
+        if(index == 3) {
+            xx *= 1.5;
+            yy *= 1.5;
+        }
+        this.flag = new Sprite2D(this, TextureManager.flag, -100, 10, xx, yy, 0, 14, s);
+        this.flag.setVisible(false);
+    }
+
+    setString(str) {
+        super.setString(str);
+        this.flag.setVisible(true);
     }
 }

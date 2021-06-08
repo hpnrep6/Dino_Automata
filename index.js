@@ -51,13 +51,15 @@ export class Main extends Scene {
             let a2 = loadImage('./automata/sprites/player.png');
             let a3 = loadImage('./automata/sprites/map.png');
             let a4 = loadImage('./automata/fonts/fontw.png');
-            let a5 = loadImage('./automata/sprites/bkg.png')
+            let a5 = loadImage('./automata/sprites/bkg.png');
+            let a6 = loadImage('./automata/sprites/flag.png')
 
-            Promise.all([a1, a2, a3, a4, a5]).then( (loaded) => {
+            Promise.all([a1, a2, a3, a4, a5, a6]).then( (loaded) => {
                 TextureManager.sprites = TextureManager.addTexture(loaded[0]);
                 TextureManager.player = TextureManager.addTexture(loaded[1]);
                 TextureManager.font = TextureManager.addTexture(loaded[3]);
                 TextureManager.bkg = TextureManager.addTexture(loaded[4])
+                TextureManager.flag = TextureManager.addTexture(loaded[5]);
 
                 AudioManager.background = AudioManager.createAudio('./automata/audio/red.ogg', 0.15);
 
@@ -94,6 +96,8 @@ export class Main extends Scene {
     bC
     yC
 
+    eT;
+
     yearT;
 
     flash;
@@ -110,6 +114,7 @@ export class Main extends Scene {
         Dino.initSpriteSheet();
         Path.initSpriteSheet();
         Healthbar.initSpriteSheet();
+        ElectionRes.initSpriteSheet();
         Tile.initSpriteSheet(TextureManager.sprites);
         Path.initSpriteSheet()
         
@@ -119,10 +124,10 @@ export class Main extends Scene {
         this.path = new GridPath(Main.map)
         this.group = new GridGroup();
 
-        this.rT = new ElectionText(200, 50, 50)
-        this.bT = new ElectionText(300, 50, 50)
-        this.yT = new ElectionText(400, 50, 50)
-        this.yearT = new ElectionText(600, 50, 50)
+        this.rT = new ElectionText(170, 50 + 120, 50, 0)
+        this.bT = new ElectionText(170, 150 + 120, 50, 1)
+        this.yT = new ElectionText(170, 250 + 120, 50, 2)
+        this.yearT = new ElectionText(170, 70, 60, 3)
 
         let ss = new SpriteSheet(TextureManager.bkg);
         ss.createFrame(0, 0, 1000, 800);
@@ -167,7 +172,6 @@ export class Main extends Scene {
 
             for(let i = 0; i < trees.length; i += 3) {
                 this.trees.push(new Tree(trees[i], trees[i + 1], trees[i + 2]))
-
             }
         }
     }
@@ -177,7 +181,7 @@ export class Main extends Scene {
 
     static CHANGE = 20;
 
-    static STAGE_2 = 400;
+    static STAGE_2 = 200;
 
     static STAGE_2_TRANS_1 = 50;
 
@@ -195,7 +199,6 @@ export class Main extends Scene {
     // 67
 
     _update(delta) {
-        console.log(getMouseX() + ' ' + getMouseY())
         let off = Math.cos(z0.getElapsedTime() / 1000) * 0.1;
 
         this.setBackgroundColour(125 / 255 + off, 73 / 255 + off, 21 / 255 + off, 1);
@@ -209,6 +212,10 @@ export class Main extends Scene {
             
             this.iterations++;
             this.grid.iterations = this.iterations;
+
+            for(let i = 0; i < this.trees.length; i ++) {
+                this.trees[i].setAlpha(this.trees[i].getAlpha() - delta * 0.2);
+            }
 
             if(this.iterations > Main.STAGE_2 - Main.STAGE_2_TRANS_1) {
                 this.flash.setVisible(true);
@@ -230,10 +237,15 @@ export class Main extends Scene {
             }
             this.stage_2_count++;
             this.flash.setAlpha((Main.STAGE_2 + 10 - this.iterations) / 10);
+
+            if(this.path) {
+                this.path.removeSelf();
+                this.path = undefined;
+            }
         } else {
             let arr = [this.rC, this.yC, this.bC];
 
-            let max = 0, index;
+            let max = 0, index = 0;
             for(let i = 0; i < arr.length; i++) {
                 if(arr[i] > max) {
                     index = i;
@@ -251,6 +263,10 @@ export class Main extends Scene {
                 case 2:
                     console.log('blue')
                     break;
+            }
+
+            if(!this.eT) {
+                this.eT = new ElectionRes(canvas.width / 2, canvas.height / 2 + 100, 230, index)
             }
         }
 
@@ -359,5 +375,22 @@ class TimeMachine extends Sprite2D {
             shine.setAlpha(1 - this.t)
             this.setHeight(Math.max(this.size * (1 - this.t), 0))
         } 
+    }
+}
+
+class ElectionRes extends Sprite2D {
+    static spritesheet;
+
+    static initSpriteSheet() {
+        this.spritesheet = new SpriteSheet(TextureManager.sprites);
+        this.spritesheet.createFrame(0, 128, 128 * 4, 128);
+        this.spritesheet.createFrame(0, 128+128, 128 * 4, 128);
+        this.spritesheet.createFrame(0, 128*3, 128 * 4, 128);
+
+    }
+    constructor(x, y, s, ind) {
+        super(null, TextureManager.sprites, x, y, s * 4, s, 0, 14, ElectionRes.spritesheet);
+
+        this.setSprite(ind);
     }
 }
