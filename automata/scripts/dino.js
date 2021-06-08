@@ -174,7 +174,7 @@ export class Dino extends Sprite2D {
     }
 
     end() {
-        
+        this.removeSelf();
     }
 }
 

@@ -5,7 +5,7 @@ import { SpriteSheet } from './z0/graphics/spritesheet.js';
 import * as Key from './z0/input/key.js';
 import { getMouseX, getMouseY } from './z0/input/mouse.js';
 import { Sprite2D } from './z0/graphics/sprite2d.js';
-import { distanceSquared } from './z0/math/math2d.js';
+import { distanceSquared, distance } from './z0/math/math2d.js';
 import { ShaderSprite2D } from './z0/graphics/shadersprite2d.js';
 import { CircleCollider } from './z0/physics/primitives/circlecollider.js';
 import { AudioManager } from './z0/audio/audiomanager.js';
@@ -90,9 +90,16 @@ export class Main extends Scene {
     rT
     bT
     yT
+    rC
+    bC
+    yC
+
     yearT;
 
     flash;
+    machine;
+    machineFlash;
+    trees = [];
 
     init() {
 
@@ -126,7 +133,43 @@ export class Main extends Scene {
         let sss = new SpriteSheet(TextureManager.player);
         sss.createFrame(508, 17, 1, 1);
         this.flash = new Sprite2D(null, TextureManager.player, canvas.width / 2, canvas.height / 2, canvas.width, canvas.height, 0, 40, sss)
-        this.flash.setVisible(false)
+        this.flash.setVisible(false);
+
+        sss.createFrame(0, 7 * 32, 64, 64);
+        this.machine = new TimeMachine(483, 45, 100, sss);
+        this.machine.setSprite(1)
+
+        sss.createFrame(0, 10 * 32, 64, 64);
+        this.machineFlash = new Sprite2D(null, TextureManager.player, 485, 60, 150, 150, 0, 14, sss);
+        this.machineFlash.setSprite(2)
+        this.machineFlash.setVisible(false);
+
+        {
+            let ssss = new SpriteSheet(TextureManager.player);
+            ssss.createFrame(2 * 32, 6 * 32, 64, 64 + 32);
+            ssss.createFrame(4 * 32, 6 * 32, 64, 64 + 32);
+            ssss.createFrame(6 * 32, 6 * 32, 64, 64 + 32);
+
+            Tree.spritesheet = ssss;
+
+            let trees = [
+                89, 20, 0,
+                233, 203, 2,
+                73, 373, 1,
+                41, 664, 2,
+                362, 471, 2,
+                285, 715, 1,
+                519, 594, 2,
+                852, 65, 2,
+                641, 175, 1,
+                844, 393, 0,
+            ];
+
+            for(let i = 0; i < trees.length; i += 3) {
+                this.trees.push(new Tree(trees[i], trees[i + 1], trees[i + 2]))
+
+            }
+        }
     }
 
     iterations = 0;
@@ -134,23 +177,25 @@ export class Main extends Scene {
 
     static CHANGE = 20;
 
-    static STAGE_2 = 200;
+    static STAGE_2 = 400;
 
-    static STAGE_2_TRANS = 50;
+    static STAGE_2_TRANS_1 = 50;
 
     static STAGE_3 = Main.STAGE_2 + 67;
 
     stage_2_count = 0;
 
-    static skip = 10;
+    static skip = 2;
 
     stage_2_iter = 0;
+
+    canEnd = false;
 
     // 2056 - 1788
     // 67
 
     _update(delta) {
-
+        console.log(getMouseX() + ' ' + getMouseY())
         let off = Math.cos(z0.getElapsedTime() / 1000) * 0.1;
 
         this.setBackgroundColour(125 / 255 + off, 73 / 255 + off, 21 / 255 + off, 1);
@@ -165,8 +210,11 @@ export class Main extends Scene {
             this.iterations++;
             this.grid.iterations = this.iterations;
 
-            if(this.iterations > Main.STAGE_2 - Main.STAGE_2_TRANS) {
+            if(this.iterations > Main.STAGE_2 - Main.STAGE_2_TRANS_1) {
                 this.flash.setVisible(true);
+                for(let i = 0; i < this.trees.length; i++) {
+                    this.trees.pop().removeSelf();
+                }
             }
         } else if(this.iterations < Main.STAGE_3) {
             if(this.stage_2_count > Main.skip) {
@@ -182,6 +230,28 @@ export class Main extends Scene {
             }
             this.stage_2_count++;
             this.flash.setAlpha((Main.STAGE_2 + 10 - this.iterations) / 10);
+        } else {
+            let arr = [this.rC, this.yC, this.bC];
+
+            let max = 0, index;
+            for(let i = 0; i < arr.length; i++) {
+                if(arr[i] > max) {
+                    index = i;
+                    max = arr[i]
+                }
+            }
+
+            switch(index) {
+                case 0:
+                    console.log('red')
+                    break;
+                case 1:
+                    console.log('yello')
+                    break;
+                case 2:
+                    console.log('blue')
+                    break;
+            }
         }
 
 
@@ -207,17 +277,21 @@ export class Main extends Scene {
         this.rT.setString(r.toString());
         this.yT.setString(y.toString());
         this.bT.setString(b.toString());
+        this.rC = r;
+        this.yC = y;
+        this.bC = b;
     }
 
     triggerEnd() {
-        this.player.end();
-        this.dino.end();
+        
 
-        this.startAutomata()
+        this.canEnd = true;
     }
 
     startAutomata() {
         this.startedEnd = true;
+        this.dino.end();
+        this.player.end();
     }
 }
 
@@ -237,4 +311,53 @@ function loadImage(url) {
     })
 }
 
-// 133 by 108
+class Tree extends Sprite2D {
+    static spritesheet;
+    
+    constructor(x, y, t) {
+        super(null, TextureManager.player, x, y, 200, 200 * (3/2), 0, 10, Tree.spritesheet);
+        this.setSprite(t);
+    }
+}
+
+class TimeMachine extends Sprite2D {
+    static DIST = 40;
+
+    startAnim = false;
+    size;
+
+    constructor(x, y, s, ss) {
+        super(null, TextureManager.player, x, y, s, s, 0, 6, ss);
+        this.size = s;
+    }
+
+    t = 0;
+    _update(delta) {
+        if(this.getParent().canEnd) {
+            if(distance(this.xLoc, this.getParent().player.xLoc, this.yLoc, this.getParent().player.yLoc) < TimeMachine.DIST) {
+                this.getParent().startAutomata();
+                
+                this.startAnim = true;
+            }
+        }
+
+        if(this.startAnim) {
+            this.t += delta;
+            
+            let shine = this.getParent().machineFlash;
+
+            shine.setVisible(true);
+            if(this.t > 1) {
+                shine.setVisible(false);
+                this.setVisible(false)
+                return;   
+            }
+            shine.rotate(31 * delta)
+
+            shine.setWidth(shine.getXSize() + delta * 1000);
+            shine.setHeight(shine.getXSize() + delta * 1000);
+            shine.setAlpha(1 - this.t)
+            this.setHeight(Math.max(this.size * (1 - this.t), 0))
+        } 
+    }
+}

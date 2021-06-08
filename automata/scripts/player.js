@@ -75,8 +75,10 @@ export class Player extends Sprite2D{
     healthbar;
     damageTimer = 1;
 
+    ended = false;
+
     constructor(x, y) {
-        super(null, TextureManager.player, x, y, Player.width * 2, Player.height, 0, 10, Player.spritesheet);
+        super(null, TextureManager.player, x, y, Player.width * 2, Player.height, 0, 9, Player.spritesheet);
 
         new PlayerCol(this);
 
@@ -204,7 +206,8 @@ export class Player extends Sprite2D{
     }
 
     end() {
-
+        this.ended = true;
+        this.removeSelf();
     }
 }
 
