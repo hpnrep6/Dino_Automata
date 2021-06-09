@@ -430,9 +430,13 @@ class TimeMachine extends Sprite2D {
     constructor(x, y, s, ss) {
         super(null, TextureManager.player, x, y, s, s, 0, 6, ss);
         this.size = s;
+
     }
 
     t = 0;
+    acc = 0;
+    message;
+    xL;
     _update(delta) {
         if(this.getParent().canEnd) {
             if(distance(this.xLoc, this.getParent().player.xLoc, this.yLoc, this.getParent().player.yLoc) < TimeMachine.DIST) {
@@ -440,8 +444,17 @@ class TimeMachine extends Sprite2D {
                 
                 this.startAnim = true;
             }
-        }
 
+            if(!this.message) {
+                this.message = new UI(-180, 0, 300, 100, 5, this)
+                this.xL = this.message.xLoc;
+            } else {
+                this.acc += delta;
+                this.message.setXOff(-180 + Math.sin(this.acc * 5) * 10)
+            }
+            
+        }
+        
         if(this.startAnim) {
             this.t += delta;
             
@@ -450,7 +463,8 @@ class TimeMachine extends Sprite2D {
             shine.setVisible(true);
             if(this.t > 1) {
                 shine.setVisible(false);
-                this.setVisible(false)
+                this.setVisible(false);
+                this.removeSelf();
                 return;   
             }
             shine.rotate(31 * delta)
