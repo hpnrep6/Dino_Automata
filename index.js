@@ -12,7 +12,7 @@ import { AudioManager } from './z0/audio/audiomanager.js';
 import { Grid, Tile, GridPath, Path, GridGroup, ElectionText } from './automata/scripts/grid.js';
 import { Player, Healthbar } from './automata/scripts/player.js';
 import { Dino } from './automata/scripts/dino.js';
-import { UI, Start, Title, Instructions } from './automata/scripts/ui.js';
+import { UI, Start, Title, Instructions, InstructionScreen } from './automata/scripts/ui.js';
 import { AARectangle } from './z0/physics/primitives/aarectcollider.js';
 
 /**
@@ -85,6 +85,8 @@ export class Menu extends Scene {
     init() {
         UI.initSpriteSheet();
 
+        UI.state = UI.STATE_MENU;
+
         this.mouseCol = new AARectangle(null, -200, -200, 0, 3, [0], [0])
         this.setBackgroundColour(0,0,0,1)
 
@@ -95,6 +97,10 @@ export class Menu extends Scene {
 
         w = 800;
         new Title(x, 200, w, w * (3/5))
+    }
+
+    showInstructions() {
+        new InstructionScreen(canvas.width / 2, canvas.height / 2, 700, 700);
     }
 
     _update(delta) {
