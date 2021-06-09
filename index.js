@@ -12,6 +12,8 @@ import { AudioManager } from './z0/audio/audiomanager.js';
 import { Grid, Tile, GridPath, Path, GridGroup, ElectionText } from './automata/scripts/grid.js';
 import { Player, Healthbar } from './automata/scripts/player.js';
 import { Dino } from './automata/scripts/dino.js';
+import { UI, Start, Title, Instructions } from './automata/scripts/ui.js';
+import { AARectangle } from './z0/physics/primitives/aarectcollider.js';
 
 /**
  * Collider layers:
@@ -35,31 +37,30 @@ let drawContext = drawCanvas.getContext('2d');
 
 z0._init(canvas);
 
-export class Main extends Scene {
-    static loaded = false;
-
-    fungus = [];
+export class Menu extends Scene {
+    static loaded;
 
     constructor() {
-        super(20000);
+        super(200);
     }
 
     _start() {
-
-        if(!Main.loaded) {
+        if(!Menu.loaded) {
             let a1 = loadImage('./automata/sprites/ss.png');
             let a2 = loadImage('./automata/sprites/player.png');
             let a3 = loadImage('./automata/sprites/map.png');
             let a4 = loadImage('./automata/fonts/fontw.png');
             let a5 = loadImage('./automata/sprites/bkg.png');
-            let a6 = loadImage('./automata/sprites/flag.png')
+            let a6 = loadImage('./automata/sprites/flag.png'),
+            a7 = loadImage('./automata/sprites/menu.png');
 
-            Promise.all([a1, a2, a3, a4, a5, a6]).then( (loaded) => {
+            Promise.all([a1, a2, a3, a4, a5, a6, a7]).then( (loaded) => {
                 TextureManager.sprites = TextureManager.addTexture(loaded[0]);
                 TextureManager.player = TextureManager.addTexture(loaded[1]);
                 TextureManager.font = TextureManager.addTexture(loaded[3]);
                 TextureManager.bkg = TextureManager.addTexture(loaded[4])
                 TextureManager.flag = TextureManager.addTexture(loaded[5]);
+                TextureManager.menu = TextureManager.addTexture(loaded[6]);
 
                 AudioManager.background = AudioManager.createAudio('./automata/audio/red.ogg', 0.15);
 
@@ -79,6 +80,42 @@ export class Main extends Scene {
         } else {
             this.init();
         }
+    }
+
+    init() {
+        UI.initSpriteSheet();
+
+        this.mouseCol = new AARectangle(null, -200, -200, 0, 3, [0], [0])
+        this.setBackgroundColour(0,0,0,1)
+
+        let x = canvas.width / 2;
+        let w = 400;
+        new Start(x, 500, w, w /3)
+        new Instructions(x, 640, w  + w * (1/3), w/3)
+
+        w = 800;
+        new Title(x, 200, w, w * (3/5))
+    }
+
+    _update(delta) {
+        this.mouseCol.setLoc(getMouseX(), getMouseY());
+
+    }
+}
+
+export class Main extends Scene {
+    static loaded = false;
+
+    static party = 6;
+
+    fungus = [];
+
+    constructor() {
+        super(20000);
+    }
+
+    _start() {
+        this.init();
     }
 
     static map;
@@ -311,7 +348,7 @@ export class Main extends Scene {
     }
 }
 
-let main = new z0.getTree().addScene(new Main());
+let main = new z0.getTree().addScene(new Menu());
 z0.getTree().setActiveScene(main);
 
 function loadImage(url) {
