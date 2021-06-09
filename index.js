@@ -12,7 +12,7 @@ import { AudioManager } from './z0/audio/audiomanager.js';
 import { Grid, Tile, GridPath, Path, GridGroup, ElectionText } from './automata/scripts/grid.js';
 import { Player, Healthbar } from './automata/scripts/player.js';
 import { Dino } from './automata/scripts/dino.js';
-import { UI, Start, Title, Instructions, InstructionScreen } from './automata/scripts/ui.js';
+import { UI, Start, Title, Instructions, InstructionScreen, Info } from './automata/scripts/ui.js';
 import { AARectangle } from './z0/physics/primitives/aarectcollider.js';
 
 /**
@@ -39,9 +39,11 @@ z0._init(canvas);
 
 export class Menu extends Scene {
     static loaded;
+    inited = false;
 
     constructor() {
         super(200);
+        this.inited = true;
     }
 
     _start() {
@@ -102,10 +104,14 @@ export class Menu extends Scene {
     showInstructions() {
         new InstructionScreen(canvas.width / 2, canvas.height / 2, 700, 700);
     }
+    
+    startGame() {
+        new Info(canvas.width / 2, canvas.height / 2, 700, 700);
+    }
 
     _update(delta) {
-        this.mouseCol.setLoc(getMouseX(), getMouseY());
-
+        if(this.mouseCol)
+            this.mouseCol.setLoc(getMouseX(), getMouseY());
     }
 }
 
@@ -144,6 +150,8 @@ export class Main extends Scene {
     yearT;
 
     flash;
+    fade;
+    fade2;
     machine;
     machineFlash;
     trees = [];
@@ -192,6 +200,17 @@ export class Main extends Scene {
         this.machineFlash.setSprite(2)
         this.machineFlash.setVisible(false);
 
+        sss.createFrame(510, 55, 1, 1);
+        this.fade = new Sprite2D(null, TextureManager.player, canvas.width / 2, canvas.height / 2, canvas.width, canvas.height, 0, 13, sss);
+        this.fade.setAlpha(0)
+        this.fade.setSprite(3);
+        this.fade.setVisible(false);
+
+        this.fade2 = new Sprite2D(null, TextureManager.player, canvas.width / 2, canvas.height / 2, canvas.width, canvas.height, 0, 20, sss);
+        this.fade2.setAlpha(0)
+        this.fade2.setSprite(3);
+        this.fade2.setVisible(false);
+
         {
             let ssss = new SpriteSheet(TextureManager.player);
             ssss.createFrame(2 * 32, 6 * 32, 64, 64 + 32);
@@ -224,11 +243,15 @@ export class Main extends Scene {
 
     static CHANGE = 20;
 
-    static STAGE_2 = 200;
+    static STAGE_2 = 50;
 
     static STAGE_2_TRANS_1 = 50;
 
     static STAGE_3 = Main.STAGE_2 + 67;
+
+    static STAGE_4 = Main.STAGE_3 + 100;
+
+    static STAGE_5 = Main.STAGE_4 + 100;
 
     stage_2_count = 0;
 
@@ -238,6 +261,8 @@ export class Main extends Scene {
 
     canEnd = false;
 
+
+
     // 2056 - 1788
     // 67
 
@@ -245,6 +270,11 @@ export class Main extends Scene {
         let off = Math.cos(z0.getElapsedTime() / 1000) * 0.1;
 
         this.setBackgroundColour(125 / 255 + off, 73 / 255 + off, 21 / 255 + off, 1);
+
+        if(Key.isKeyDown('escape')) {
+            z0.getTree().setActiveScene(new Menu());
+            return;
+        }
 
         if(!this.startedEnd) return;
 
@@ -298,18 +328,30 @@ export class Main extends Scene {
 
             switch(index) {
                 case 0:
-                    console.log('red')
+                    Main.party = 6;
                     break;
                 case 1:
-                    console.log('yello')
+                    Main.party = 7;
                     break;
                 case 2:
-                    console.log('blue')
+                    Main.party = 8;
                     break;
             }
 
             if(!this.eT) {
                 this.eT = new ElectionRes(canvas.width / 2, canvas.height / 2 + 100, 230, index)
+            }
+
+            this.iterations++;
+
+            if(this.iterations > Main.STAGE_4) {
+                this.fade.setVisible(true);
+                this.fade.setAlpha(this.fade.getAlpha() + delta/ 5);
+            }
+
+            if(this.iterations > Main.STAGE_5) {
+                this.fade2.setVisible(true);
+                this.fade2.setAlpha(this.fade.getAlpha() + delta/ 5);
             }
         }
 

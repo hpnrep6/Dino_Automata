@@ -7,6 +7,7 @@ import { Module } from '../../z0/tree/module.js';
 import { BitmapText } from '../fonts/bitmaptext.js';
 import { AARectangle } from '../../z0/physics/primitives/aarectcollider.js';
 import { isDown } from '../../z0/input/mouse.js';
+import { getTree } from '../../z0/z0.js';
 
 export class UI extends Sprite2D {
     static spritesheet;
@@ -118,6 +119,17 @@ class UICol extends AARectangle {
  * 11 Prehistoric
  */
 
+export class Info extends UI {
+    constructor(x, y, w, h) {
+        super(x, y, w, h, 12)
+        UI.state = UI.STATE_INSTRU;
+
+        let ww = 340;
+        new InfoButton(650, 710, ww, ww/3, this)
+    }
+} 
+
+
 export class InstructionScreen extends UI {
     index = 9;
 
@@ -193,7 +205,7 @@ export class Start extends UI {
     }
 
     _update(delta) {
-        if(UI.state !== UI.STATE_MENU) return;
+        if(this.check()) return;
 
         super._update(delta);
         this.acc += delta;
@@ -206,9 +218,28 @@ export class Start extends UI {
         this.hover = false;
     }
 
+    check() {
+        return UI.state !== UI.STATE_MENU;
+    }
+
     onHover() {
         this.hover =true;
     
+    }
+
+    onPress() {
+        this.getParent().startGame();
+    }
+}
+
+
+export class InfoButton extends Start {
+    onPress() {
+        getTree().setActiveScene(new Main());
+    }
+
+    check() {
+        return UI.state !== UI.STATE_INSTRU;
     }
 }
 
