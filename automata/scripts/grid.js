@@ -75,10 +75,17 @@ export class Grid {
             }
         }
 
-        this.buffer1[Grid.width - 4][Grid.height - 3] = Grid.ALIVE_1
-        this.buffer1[Grid.width - 3][Grid.height - 3] = Grid.ALIVE_1
-        this.buffer1[Grid.width - 3][Grid.height - 4] = Grid.ALIVE_1
-        this.buffer1[Grid.width - 2][Grid.height - 4] = Grid.ALIVE_1
+        this.buffer1[Grid.width - 2][Grid.height - 2] = Grid.ALIVE_3
+
+
+        this.buffer1[4][3] = Grid.ALIVE_2
+        this.buffer1[3][3] = Grid.ALIVE_2
+        this.buffer1[3][4] = Grid.ALIVE_2
+        this.buffer1[2][4] = Grid.ALIVE_2
+        this.buffer1[5][3] = Grid.ALIVE_2
+        this.buffer1[5][3] = Grid.ALIVE_2
+        this.buffer1[5][2] = Grid.ALIVE_2
+        this.buffer1[5][1] = Grid.ALIVE_2
 
     }
 
