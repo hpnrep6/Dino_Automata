@@ -75,7 +75,13 @@ export class Grid {
             }
         }
 
-        this.buffer1[Grid.width - 2][Grid.height - 2] = Grid.ALIVE_3
+        this.buffer1[Grid.width - 24][Grid.height - 2] = Grid.ALIVE_3
+
+        this.buffer1[Grid.width - 50][Grid.height - 50] = Grid.ALIVE_1
+        this.buffer1[Grid.width - 80][Grid.height - 80] = Grid.ALIVE_1
+        this.buffer1[3][Grid.height - 50] = Grid.ALIVE_1
+        this.buffer1[Grid.width - 2][3] = Grid.ALIVE_1
+
 
 
         this.buffer1[4][3] = Grid.ALIVE_2
@@ -169,7 +175,7 @@ export class Grid {
                             }
                         }
 
-                        if(max == 3 || max == 4) {
+                        if(max == 2 || max == 4) {
                             next[i][j] = ind;
                         }
                 
@@ -317,7 +323,7 @@ export class GridGroup {
 
             for(let j = 0; j < GridGroup.height; j++) {
                 this.tiles[i][j] = new Tile(i * GridGroup.size + this.xLoc, j * GridGroup.size + this.yLoc, this.parent, 4, GridGroup.size);
-                this.tiles[i][j].setAlpha(0.15)
+                this.tiles[i][j].setAlpha(0.7)
             }
         }
     }
@@ -371,8 +377,8 @@ export class GridPath extends Module{
     tiles = [];
     alpha = 1;
 
-    xLoc = -Grid.size / 2;
-    yLoc = -Grid.size / 2;
+    xLoc = -Grid.size / 4;
+    yLoc = -Grid.size / 4;
 
     width;
     height;

@@ -265,6 +265,7 @@ export class Main extends Scene {
 
         this.travel = new ShaderSprite2D(null, Main.travelRenderer, canvas.width / 2, canvas.height / 2, canvas.width, canvas.height, 0, 4);
         this.travel.setVisible(false);
+        this.setBackgroundColour(1,1,1,1);
     }
 
     iterations = 0;
@@ -286,7 +287,7 @@ export class Main extends Scene {
 
     stage_2_count = 0;
 
-    static skip = 2;
+    static skip = 10;
 
     stage_2_iter = 0;
 
@@ -302,9 +303,6 @@ export class Main extends Scene {
         if(delta == 0) {
             return;
         }
-        let off = Math.cos(z0.getElapsedTime() / 1000) * 0.1;
-
-        this.setBackgroundColour(125 / 255 + off, 73 / 255 + off, 21 / 255 + off, 1);
 
         if(Key.isKeyDown('escape')) {
             z0.getTree().setActiveScene(new Menu());
@@ -361,7 +359,7 @@ export class Main extends Scene {
         } else if(this.iterations < Main.STAGE_3) {
 
             if(this.iterations == Main.STAGE_3) {
-                this.grid.setAlpha(0.5);
+                this.grid.setAlpha(0.9);
             }
 
             if(this.stage_2_count > Main.skip) {
@@ -421,7 +419,10 @@ export class Main extends Scene {
 
         if(this.iterations < Main.STAGE_2_2) return;
 
-        this.bkg.setSprite(1)
+        if(this.bkg.getZ() != 6)
+            this.bkg.setSprite(1)
+            this.bkg.setZ(6)
+
         this.group.updateGraphics();
 
         let data = this.group.tiles;
