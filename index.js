@@ -14,6 +14,7 @@ import { Player, Healthbar } from './automata/scripts/player.js';
 import { Dino } from './automata/scripts/dino.js';
 import { UI, Start, Title, Instructions, InstructionScreen, Info } from './automata/scripts/ui.js';
 import { AARectangle } from './z0/physics/primitives/aarectcollider.js';
+import { Sponge } from './automata/scripts/shader.js';
 
 /**
  * Collider layers:
@@ -40,6 +41,9 @@ z0._init(canvas);
 export class Menu extends Scene {
     static loaded;
     inited = false;
+
+    static menuBkgRenderer;
+    bkg;
 
     constructor() {
         super(200);
@@ -75,6 +79,7 @@ export class Menu extends Scene {
                 drawContext.drawImage(loaded[2], 0, 0, loaded[2].width, loaded[2].height);
                 Main.map = drawContext.getImageData(0, 0, drawCanvas.width, drawCanvas.height).data
 
+                Menu.menuBkgRenderer = new Sponge();
                 this.init();
 
                 z0._startUpdates();
@@ -98,7 +103,9 @@ export class Menu extends Scene {
         new Instructions(x, 640, w  + w * (1/3), w/3)
 
         w = 800;
-        new Title(x, 200, w, w * (3/5))
+        new Title(x, 200, w, w * (3/5));
+
+        this.bkg = new ShaderSprite2D(null, Menu.menuBkgRenderer, canvas.width / 2, canvas.height / 2, canvas.width, canvas.height, 0, 0)
     }
 
     showInstructions() {
