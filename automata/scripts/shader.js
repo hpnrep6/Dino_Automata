@@ -238,7 +238,7 @@ void main()
 	
 	float dist = scene(rayPos);
 	int stepsTaken;
-    int MAX_RAY_STEPS = int((cos(uTime)+1.1) * 50.);
+    int MAX_RAY_STEPS = int((cos(uTime)+1.4) * 50.);
     
 	for (int i = 0; i < 64; i++) {
 		if (dist < RAY_STOP_TRESHOLD) {

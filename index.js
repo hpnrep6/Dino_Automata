@@ -274,6 +274,10 @@ export class Main extends Scene {
     // 67
 
     _update(delta) {
+
+        if(delta == 0) {
+            return;
+        }
         let off = Math.cos(z0.getElapsedTime() / 1000) * 0.1;
 
         this.setBackgroundColour(125 / 255 + off, 73 / 255 + off, 21 / 255 + off, 1);
