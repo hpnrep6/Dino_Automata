@@ -5,33 +5,64 @@ import { SpriteSheet } from './z0/graphics/spritesheet.js';
 import * as Key from './z0/input/key.js';
 import { getMouseX, getMouseY } from './z0/input/mouse.js';
 import { Sprite2D } from './z0/graphics/sprite2d.js';
-import { distanceSquared } from './z0/math/math2d.js';
+import { distanceSquared, distance } from './z0/math/math2d.js';
 import { ShaderSprite2D } from './z0/graphics/shadersprite2d.js';
 import { CircleCollider } from './z0/physics/primitives/circlecollider.js';
 import { AudioManager } from './z0/audio/audiomanager.js';
+import { Grid, Tile, GridPath, Path, GridGroup, ElectionText } from './automata/scripts/grid.js';
+import { Player, Healthbar } from './automata/scripts/player.js';
+import { Dino } from './automata/scripts/dino.js';
+import { UI, Start, Title, Instructions, InstructionScreen, Info } from './automata/scripts/ui.js';
+import { AARectangle } from './z0/physics/primitives/aarectcollider.js';
+
+/**
+ * Collider layers:
+ * 
+ * Layer [0, 1]
+ * Dinosaur
+ * 
+ * Mask [0]
+ * Player
+ * 
+ * Mask[1]
+ * Bullet
+ * 
+ */
 
 let canvas = document.querySelector('canvas');
 
+let drawCanvas = document.createElement('canvas');
+
+let drawContext = drawCanvas.getContext('2d');
+
 z0._init(canvas);
 
-export class Main extends Scene {
-    static loaded = false;
-
-    fungus = [];
+export class Menu extends Scene {
+    static loaded;
+    inited = false;
 
     constructor() {
-        super(450);
+        super(200);
+        this.inited = true;
     }
 
     _start() {
+        if(!Menu.loaded) {
+            let a1 = loadImage('./automata/sprites/ss.png');
+            let a2 = loadImage('./automata/sprites/player.png');
+            let a3 = loadImage('./automata/sprites/map.png');
+            let a4 = loadImage('./automata/fonts/fontw.png');
+            let a5 = loadImage('./automata/sprites/bkg.png');
+            let a6 = loadImage('./automata/sprites/flag.png'),
+            a7 = loadImage('./automata/sprites/menu.png');
 
-        if(!Main.loaded) {
-            let sprites = loadImage('./automata/sprites/ss.png');
-
-            Promise.all([sprites]).then( (loaded) => {
+            Promise.all([a1, a2, a3, a4, a5, a6, a7]).then( (loaded) => {
                 TextureManager.sprites = TextureManager.addTexture(loaded[0]);
-
-                Tile.initSpriteSheet(TextureManager.sprites);
+                TextureManager.player = TextureManager.addTexture(loaded[1]);
+                TextureManager.font = TextureManager.addTexture(loaded[3]);
+                TextureManager.bkg = TextureManager.addTexture(loaded[4])
+                TextureManager.flag = TextureManager.addTexture(loaded[5]);
+                TextureManager.menu = TextureManager.addTexture(loaded[6]);
 
                 AudioManager.background = AudioManager.createAudio('./automata/audio/red.ogg', 0.15);
 
@@ -39,375 +70,333 @@ export class Main extends Scene {
 
                 AudioManager.next = AudioManager.createAudio('./automata/audio/pop.flac', 0.4);
 
-                z0._startUpdates();
+                drawCanvas.width = loaded[2].width;
+                drawCanvas.height = loaded[2].height;
+                drawContext.drawImage(loaded[2], 0, 0, loaded[2].width, loaded[2].height);
+                Main.map = drawContext.getImageData(0, 0, drawCanvas.width, drawCanvas.height).data
 
                 this.init();
+
+                z0._startUpdates();
             });
         } else {
             this.init();
         }
     }
-    
-    grid;
-    static w = 10
+
     init() {
-        // for(let i = 0; i < this.sizew; i++) {
-        //     this.arr.push([])
-        //     this.a.push([])
-        //     for(let j = 0; j < this.sizee; j++) {
+        UI.initSpriteSheet();
 
-        //         this.arr[i][j] = new Tile(i * Main.w + Main.w/2, j * Main.w + Main.w/2);
-        //         this.arr[i][j].setSprite(1)
-        //         this.a[i][j] = 1;
-        //     }
-        // }
+        UI.state = UI.STATE_MENU;
 
-        // let x = 25, y = 25
-        // this.a[x+1][y+1] = 0
-        // this.a[x+1][y+2] = 0
-        // this.a[x+2][y+1] = 0
-        // this.a[x+3][y+1] = 0
-        // this.a[x+2][y+3] = 0
-        this.grid = new Grid();
-        
+        this.mouseCol = new AARectangle(null, -200, -200, 0, 3, [0], [0])
+        this.setBackgroundColour(0,0,0,1)
+
+        let x = canvas.width / 2;
+        let w = 400;
+        new Start(x, 500, w, w /3)
+        new Instructions(x, 640, w  + w * (1/3), w/3)
+
+        w = 800;
+        new Title(x, 200, w, w * (3/5))
     }
-    con = 0;
-    sizee = canvas.height / Main.w;
-    sizew = canvas.width / Main.w;
+
+    showInstructions() {
+        new InstructionScreen(canvas.width / 2, canvas.height / 2, 700, 700);
+    }
+    
+    startGame() {
+        new Info(canvas.width / 2, canvas.height / 2, 700, 700);
+    }
 
     _update(delta) {
+        if(this.mouseCol)
+            this.mouseCol.setLoc(getMouseX(), getMouseY());
+    }
+}
 
+export class Main extends Scene {
+    static loaded = false;
+
+    static party = 6;
+
+    fungus = [];
+
+    constructor() {
+        super(20000);
+    }
+
+    _start() {
+        this.init();
+    }
+
+    static map;
+    grid;
+    player;
+    dino;
+    path;
+    group;
+    bkg;
+
+    rT
+    bT
+    yT
+    rC
+    bC
+    yC
+
+    eT;
+
+    yearT;
+
+    flash;
+    fade;
+    fade2;
+    machine;
+    machineFlash;
+    trees = [];
+
+    init() {
+
+        Grid.init();
+        GridPath.init();
+        GridGroup.init();
+        Player.initSpriteSheet();
+        Dino.initSpriteSheet();
+        Path.initSpriteSheet();
+        Healthbar.initSpriteSheet();
+        ElectionRes.initSpriteSheet();
+        Tile.initSpriteSheet(TextureManager.sprites);
+        Path.initSpriteSheet()
+        
+        this.grid = new Grid();
+        this.player = new Player(475, 50)
+        this.dino = new Dino(920, 900)
+        this.path = new GridPath(Main.map)
+        this.group = new GridGroup();
+
+        this.rT = new ElectionText(170, 50 + 120, 50, 0)
+        this.bT = new ElectionText(170, 150 + 120, 50, 1)
+        this.yT = new ElectionText(170, 250 + 120, 50, 2)
+        this.yearT = new ElectionText(170, 70, 60, 3)
+
+        let ss = new SpriteSheet(TextureManager.bkg);
+        ss.createFrame(0, 0, 1000, 800);
+        ss.createFrame(0, 800, 1000, 800);
+
+        this.bkg = new Sprite2D(null, TextureManager.bkg, canvas.width / 2, canvas.height / 2, canvas.width, canvas.height, 0, 1, ss)
+        
+        let sss = new SpriteSheet(TextureManager.player);
+        sss.createFrame(508, 17, 1, 1);
+        this.flash = new Sprite2D(null, TextureManager.player, canvas.width / 2, canvas.height / 2, canvas.width, canvas.height, 0, 40, sss)
+        this.flash.setVisible(false);
+
+        sss.createFrame(0, 7 * 32, 64, 64);
+        this.machine = new TimeMachine(483, 45, 100, sss);
+        this.machine.setSprite(1)
+
+        sss.createFrame(0, 10 * 32, 64, 64);
+        this.machineFlash = new Sprite2D(null, TextureManager.player, 485, 60, 150, 150, 0, 14, sss);
+        this.machineFlash.setSprite(2)
+        this.machineFlash.setVisible(false);
+
+        sss.createFrame(510, 55, 1, 1);
+        this.fade = new Sprite2D(null, TextureManager.player, canvas.width / 2, canvas.height / 2, canvas.width, canvas.height, 0, 13, sss);
+        this.fade.setAlpha(0)
+        this.fade.setSprite(3);
+        this.fade.setVisible(false);
+
+        this.fade2 = new Sprite2D(null, TextureManager.player, canvas.width / 2, canvas.height / 2, canvas.width, canvas.height, 0, 20, sss);
+        this.fade2.setAlpha(0)
+        this.fade2.setSprite(3);
+        this.fade2.setVisible(false);
+
+        {
+            let ssss = new SpriteSheet(TextureManager.player);
+            ssss.createFrame(2 * 32, 6 * 32, 64, 64 + 32);
+            ssss.createFrame(4 * 32, 6 * 32, 64, 64 + 32);
+            ssss.createFrame(6 * 32, 6 * 32, 64, 64 + 32);
+
+            Tree.spritesheet = ssss;
+
+            let trees = [
+                89, 20, 0,
+                233, 203, 2,
+                73, 373, 1,
+                41, 664, 2,
+                362, 471, 2,
+                285, 715, 1,
+                519, 594, 2,
+                852, 65, 2,
+                641, 175, 1,
+                844, 393, 0,
+            ];
+
+            for(let i = 0; i < trees.length; i += 3) {
+                this.trees.push(new Tree(trees[i], trees[i + 1], trees[i + 2]))
+            }
+        }
+    }
+
+    iterations = 0;
+    startedEnd = false;
+
+    static CHANGE = 20;
+
+    static STAGE_2 = 50;
+
+    static STAGE_2_TRANS_1 = 50;
+
+    static STAGE_3 = Main.STAGE_2 + 67;
+
+    static STAGE_4 = Main.STAGE_3 + 100;
+
+    static STAGE_5 = Main.STAGE_4 + 100;
+
+    stage_2_count = 0;
+
+    static skip = 2;
+
+    stage_2_iter = 0;
+
+    canEnd = false;
+
+
+
+    // 2056 - 1788
+    // 67
+
+    _update(delta) {
         let off = Math.cos(z0.getElapsedTime() / 1000) * 0.1;
 
         this.setBackgroundColour(125 / 255 + off, 73 / 255 + off, 21 / 255 + off, 1);
 
-        if(Key.isKeyDown('w') ) {
-            return
+        if(Key.isKeyDown('escape')) {
+            z0.getTree().setActiveScene(new Menu());
+            return;
         }
 
-        this.grid.update();
-    //     if(this.con > -1) {
-    //     let n = [];
+        if(!this.startedEnd) return;
 
-    //     for(let i = 0; i < this.sizew; i++) {
-    //         n.push([])
-    //         for(let j = 0; j < this.sizee; j++) {
-    //             n[i][j] = this.a[i][j]
-    //         }
-    //     }
+        if(this.iterations < Main.STAGE_2) {
 
+            this.grid.update();
+            this.grid.updateGraphics();
+            
+            this.iterations++;
+            this.grid.iterations = this.iterations;
 
-    //     for(let i = 1; i < this.sizew-1; i++) {
-    //         for(let j = 1; j < this.sizee-1; j++) {
-    //             let al = 0;
-    //             for(let k = i - 1; k < i + 2; k++) {
-    //                 for(let l = j - 1; l < j + 2; l++) {
-    //                     if(this.a[k][l] == 0) {
-    //                         if(k == i && l == j)
-    //                             continue
-    //                         al++;
-    //                     }
-    //                 }
-    //             }
-
-    //             if(this.a[i][j] == 0) {
-    //                 if(al < 2) {
-    //                     n[i][j] = 1
-    //                 } else if(al > 4) {
-    //                     n[i][j] = 1
-    //                 }
-    //             } else {
-    //                 if(al == 3 || al == 4) {
-    //                     n[i][j] = 0
-    //                 }
-    //             }
-    //         }
-    //     }
-
-    //     this.a = n;
-        
-    //     for(let i = 0; i < this.sizew; i++) {
-
-    //         for(let j = 0; j < this.sizee; j++) {
-    //             if(this.a[i][j] == 0)
-    //                 this.arr[i][j].setSprite(0)
-    //             else
-    //                 this.arr[i][j].setSprite(1)
-    //         }
-    //     }
-    //     this.con = 0
-    // } else this.con++
-        
-    }
-
-    start() {
-        z0.getTree().setActiveScene(new L1(4, 0, 1)); 
-    }
-}
-
-class Tile extends Sprite2D {
-    static spriteSheet;
-
-    static initSpriteSheet(image) {
-        this.spriteSheet = new SpriteSheet(image);
-
-        this.spriteSheet.createFrame(0,0,32,32);
-        this.spriteSheet.createFrame(32,32,32,32);
-        this.spriteSheet.createFrame(64,0,32,32);
-        this.spriteSheet.createFrame(64,64,32,32);
-    }
-    
-    constructor(x, y) {
-        super(null, TextureManager.sprites, x, y, Main.w, Main.w, 0, 0, Tile.spriteSheet)
-
-    }
-}
-
-class Grid {
-    static DEAD = 0;
-    static ALIVE_1 = 1;
-    static ALIVE_2 = 2;
-    static ALIVE_3 = 3;
-
-    static size = 5;
-    static width = canvas.width / Grid.size;
-    static height = canvas.height / Grid.size;
-   
-    a_1 = 0;
-    a_2 = 0;
-    a_3 = 0;
-
-    tiles = []
-    buffer1 = [Grid.width];
-    buffer2 = [Grid.width];
-    usingBuffer1 = true;
-
-    xLoc = Grid.size / 2;
-    yLoc = Grid.size / 2;
-
-    constructor() {
-        for(let i = 0; i < Grid.width; i++) {
-            this.tiles.push([])
-            this.buffer1[i] = [Grid.height];
-            this.buffer2[i] = [Grid.height];
-
-            for(let j = 0; j < Grid.height; j++) {
-                this.tiles[i][j] = new Tile(this.xLoc + i * Grid.size, this.yLoc + j * Grid.size)
-                this.buffer1[i][j] = Grid.DEAD;
-                this.buffer2[i][j] = Grid.DEAD;
+            for(let i = 0; i < this.trees.length; i ++) {
+                this.trees[i].setAlpha(this.trees[i].getAlpha() - delta * 0.2);
             }
-        }
 
-        let cur = this.buffer1;
-
-        cur[25][25] = Grid.ALIVE_1;
-
-        let x = 23, y = 25
-        cur[x+1][y+1] = Grid.ALIVE_1
-        cur[x+1][y+2] = Grid.ALIVE_1
-        cur[x+2][y+1] = Grid.ALIVE_1
-        cur[x+3][y+1] = Grid.ALIVE_1
-        cur[x+2][y+3] = Grid.ALIVE_1
-
-
-         x = 55, y = 53
-        cur[x+1][y+1] = Grid.ALIVE_2
-        cur[x+1][y+2] = Grid.ALIVE_2
-        cur[x+2][y+1] = Grid.ALIVE_2
-        cur[x+3][y+1] = Grid.ALIVE_2
-        cur[x+2][y+3] = Grid.ALIVE_2
-        x = 56, y = 55
-        cur[x+1][y+1] = Grid.ALIVE_2
-        cur[x+1][y+2] = Grid.ALIVE_2
-        cur[x+2][y+1] = Grid.ALIVE_2
-        cur[x+3][y+1] = Grid.ALIVE_2
-        cur[x+2][y+3] = Grid.ALIVE_2
-
-        x =67, y = 25
-        cur[x+1][y+1] = Grid.ALIVE_3
-        cur[x+1][y+2] = Grid.ALIVE_3
-        cur[x+2][y+1] = Grid.ALIVE_3
-        cur[x+3][y+1] = Grid.ALIVE_3
-        cur[x+2][y+3] = Grid.ALIVE_3
-        x =69, y = 22
-        cur[x+1][y+1] = Grid.ALIVE_3
-        cur[x+1][y+2] = Grid.ALIVE_3
-        cur[x+2][y+1] = Grid.ALIVE_3
-        cur[x+3][y+1] = Grid.ALIVE_3
-        cur[x+2][y+3] = Grid.ALIVE_3
-
-    }
-
-    steps = 0;
-
-    update() {
-        this.steps++;
-
-        let cur, next;
-
-        if(this.usingBuffer1) {
-            cur = this.buffer1;
-            next = this.buffer2;
-        } else {
-            cur = this.buffer2;
-            next = this.buffer1;
-        }
-
-        next = [];
-        for(let i = 0; i < Grid.width; i++) {
-            next.push([])
-            for(let j = 0; j < Grid.height; j++) {
-                next[i][j] = this.buffer1[i][j]
-            }
-        }
-
-        let a_2_ind = 3;
-        let a_3_ind = 3;
-
-        if(this.steps > 50) {
-             a_2_ind = this.a_1 < 50 ? 5 : 3;
-             a_3_ind = this.a_2 < 50 ? 5 : 3;
-        } else {
-             a_2_ind = 3;
-             a_3_ind = 3;
-        }
-        this.a_1 = 0;
-        this.a_2 = 0;
-        this.a_3 = 0;
-
-        for(let i = 1; i < Grid.width -1; i++) {
-            for(let j = 1; j < Grid.height -1; j++) {
-                switch(cur[i][j]) {
-                    case Grid.DEAD: {
-                        let alive = [
-                            0,0,0,0
-                        ]
-
-                        for(let k = i - 1; k < i + 2; k++) {
-                            for(let l = j - 1; l < j + 2; l++) {
-                                if(cur[k][l] > Grid.DEAD) {
-                                    
-                                    if(k == i && l == j)
-                                        continue
-                                    alive[cur[k][l]]++;
-                                }
-                            }
-                        }
-
-                        let max = 0, ind;
-                        for(let i = 0; i < alive.length; i++) {
-                            if(alive[i] > max) {
-                                max = alive[i]
-                                ind = i
-                            }
-                        }
-
-                        if(max == 3 || max == 4) {
-                            next[i][j] = ind;
-                        }
-                
-                    } break;
-
-                    case Grid.ALIVE_1: {
-                        this.a_1++;
-
-                        let al = 0;
-                        for(let k = i - 1; k < i + 2; k++) {
-                            for(let l = j - 1; l < j + 2; l++) {
-                                if(cur[k][l] == Grid.ALIVE_3) {
-
-                                    let c = (Math.cos((k * i + l * j + 11)) * 131 + this.steps) % 6
-
-                                    if(c > 4)
-                                        next[k][l] = Grid.ALIVE_1
-                                }
-                                else if(cur[k][l] == Grid.ALIVE_1) {
-                                    if(k == i && l == j)
-                                        continue
-                                    al++;
-                                }
-                            }
-                        }
-
-                        if(al < 1) {
-                            next[i][j] = Grid.DEAD
-                        } else if(al > 4) {
-                            next[i][j] = Grid.DEAD
-                        }
-
-                    } break;
-
-                    case Grid.ALIVE_2: {
-                        this.a_2++;
-
-                        let al = 0;
-                        for(let k = i - 1; k < i + 2; k++) {
-                            for(let l = j - 1; l < j + 2; l++) {
-                                if(cur[k][l] == Grid.ALIVE_1) {
-
-                                    let c = (Math.cos((k * i + l * j + 121) + this.steps) * 131) % 6
-
-                                    if(c > 4)
-                                        next[k][l] = Grid.ALIVE_2
-                                }
-                                else if(cur[k][l] == Grid.ALIVE_2) {
-                                    if(k == i && l == j)
-                                        continue
-                                    al++;
-                                }
-                            }
-                        }
-
-                        if(al < 1) {
-                            next[i][j] = Grid.DEAD
-                        } else if(al > a_2_ind) {
-                            next[i][j] = Grid.DEAD
-                        }
-                    } break;
-
-                    case Grid.ALIVE_3: {
-                        this.a_3++;
-
-                        let al = 0;
-                        for(let k = i - 1; k < i + 2; k++) {
-                            for(let l = j - 1; l < j + 2; l++) {
-                                if(cur[k][l] == Grid.ALIVE_2) {
-
-                                    let c = (Math.cos((k * i + l * j + 131)) * 531 + this.steps) % 6
-
-                                    if(c > 3)
-                                        next[k][l] = Grid.ALIVE_3
-                                }
-                                else if(cur[k][l] == Grid.ALIVE_3) {
-                                    if(k == i && l == j)
-                                        continue
-                                    al++;
-                                }
-                            }
-                        }
-
-                        if(al < 1) {
-                            next[i][j] = Grid.DEAD
-                        } else if(al > a_3_ind) {
-                            next[i][j] = Grid.DEAD
-                        }
-                    } break;
+            if(this.iterations > Main.STAGE_2 - Main.STAGE_2_TRANS_1) {
+                this.flash.setVisible(true);
+                for(let i = 0; i < this.trees.length; i++) {
+                    this.trees.pop().removeSelf();
                 }
             }
-        }
-        
-        for(let i = 1; i < Grid.width - 1; i++) {
-            for(let j = 1; j < Grid.height - 1; j++) {
-                this.tiles[i][j].setSprite(next[i][j])
-                //this.tiles[i][j].setSprite(Math.trunc(next[i][j]))
+        } else if(this.iterations < Main.STAGE_3) {
+            if(this.stage_2_count > Main.skip) {
+                this.stage_2_count = 0;
+                this.stage_2_iter++;
+
+                this.grid.update();
+                this.grid.updateGraphics();
+                
+                this.iterations++;
+                this.grid.iterations = this.iterations;
+                this.yearT.setString((1788 + 4 * Math.floor((this.iterations - Main.STAGE_2))).toString())
+            }
+            this.stage_2_count++;
+            this.flash.setAlpha((Main.STAGE_2 + 10 - this.iterations) / 10);
+
+            if(this.path) {
+                this.path.removeSelf();
+                this.path = undefined;
+            }
+        } else {
+            let arr = [this.rC, this.yC, this.bC];
+
+            let max = 0, index = 0;
+            for(let i = 0; i < arr.length; i++) {
+                if(arr[i] > max) {
+                    index = i;
+                    max = arr[i]
+                }
+            }
+
+            switch(index) {
+                case 0:
+                    Main.party = 6;
+                    break;
+                case 1:
+                    Main.party = 7;
+                    break;
+                case 2:
+                    Main.party = 8;
+                    break;
+            }
+
+            if(!this.eT) {
+                this.eT = new ElectionRes(canvas.width / 2, canvas.height / 2 + 100, 230, index)
+            }
+
+            this.iterations++;
+
+            if(this.iterations > Main.STAGE_4) {
+                this.fade.setVisible(true);
+                this.fade.setAlpha(this.fade.getAlpha() + delta/ 5);
+            }
+
+            if(this.iterations > Main.STAGE_5) {
+                this.fade2.setVisible(true);
+                this.fade2.setAlpha(this.fade.getAlpha() + delta/ 5);
             }
         }
 
-        this.buffer1 = next;
+
+        if(this.iterations < Main.STAGE_2) return;
+
+        this.bkg.setSprite(1)
+        this.group.updateGraphics();
+
+        let data = this.group.tiles;
+
+        let b = 0, y = 0, r = 0;
+
+        for(let i = 0; i < data.length; i++) {
+            for(let j = 0; j < data[0].length; j++) {
+                let cur = data[i][j].spriteIndex;
+
+                if(cur == 1 + 4) b++
+                else if (cur == 2 + 4) y++;
+                else if (cur == 3 + 4) r++;
+            }
+        }
+
+        this.rT.setString(r.toString());
+        this.yT.setString(y.toString());
+        this.bT.setString(b.toString());
+        this.rC = r;
+        this.yC = y;
+        this.bC = b;
+    }
+
+    triggerEnd() {
+        
+
+        this.canEnd = true;
+    }
+
+    startAutomata() {
+        this.startedEnd = true;
+        this.dino.end();
+        this.player.end();
     }
 }
 
-let main = new z0.getTree().addScene(new Main());
+let main = new z0.getTree().addScene(new Menu());
 z0.getTree().setActiveScene(main);
 
 function loadImage(url) {
@@ -421,4 +410,86 @@ function loadImage(url) {
         })
         image.src = url;
     })
+}
+
+class Tree extends Sprite2D {
+    static spritesheet;
+    
+    constructor(x, y, t) {
+        super(null, TextureManager.player, x, y, 200, 200 * (3/2), 0, 10, Tree.spritesheet);
+        this.setSprite(t);
+    }
+}
+
+class TimeMachine extends Sprite2D {
+    static DIST = 40;
+
+    startAnim = false;
+    size;
+
+    constructor(x, y, s, ss) {
+        super(null, TextureManager.player, x, y, s, s, 0, 6, ss);
+        this.size = s;
+
+    }
+
+    t = 0;
+    acc = 0;
+    message;
+    xL;
+    _update(delta) {
+        if(this.getParent().canEnd) {
+            if(distance(this.xLoc, this.getParent().player.xLoc, this.yLoc, this.getParent().player.yLoc) < TimeMachine.DIST) {
+                this.getParent().startAutomata();
+                
+                this.startAnim = true;
+            }
+
+            if(!this.message) {
+                this.message = new UI(-180, 0, 300, 100, 5, this)
+                this.xL = this.message.xLoc;
+            } else {
+                this.acc += delta;
+                this.message.setXOff(-180 + Math.sin(this.acc * 5) * 10)
+            }
+            
+        }
+        
+        if(this.startAnim) {
+            this.t += delta;
+            
+            let shine = this.getParent().machineFlash;
+
+            shine.setVisible(true);
+            if(this.t > 1) {
+                shine.setVisible(false);
+                this.setVisible(false);
+                this.removeSelf();
+                return;   
+            }
+            shine.rotate(31 * delta)
+
+            shine.setWidth(shine.getXSize() + delta * 1000);
+            shine.setHeight(shine.getXSize() + delta * 1000);
+            shine.setAlpha(1 - this.t)
+            this.setHeight(Math.max(this.size * (1 - this.t), 0))
+        } 
+    }
+}
+
+class ElectionRes extends Sprite2D {
+    static spritesheet;
+
+    static initSpriteSheet() {
+        this.spritesheet = new SpriteSheet(TextureManager.sprites);
+        this.spritesheet.createFrame(0, 128, 128 * 4, 128);
+        this.spritesheet.createFrame(0, 128+128, 128 * 4, 128);
+        this.spritesheet.createFrame(0, 128*3, 128 * 4, 128);
+
+    }
+    constructor(x, y, s, ind) {
+        super(null, TextureManager.sprites, x, y, s * 4, s, 0, 14, ElectionRes.spritesheet);
+
+        this.setSprite(ind);
+    }
 }

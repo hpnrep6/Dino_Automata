@@ -115,6 +115,14 @@ export class Module {
         this._updateChildrenLoc();
     }
 
+    setXOff(xOff) {
+        this.setOff(xOff, this.yOff);
+    }
+
+    setYOff(yOff) {
+        this.setOff(this.xOff, yOff);
+    }
+
     setRot(rot) {
         this.rot = rot;
         this._rotX = Math.cos(rot);
