@@ -74,26 +74,12 @@ export class Grid {
                 this.buffer2[i][j] = Grid.DEAD;
             }
         }
-        // let x = 66, y = 44
-        // this.buffer1[x+1][y+1] = Grid.ALIVE_1
-        // this.buffer1[x+1][y+2] = Grid.ALIVE_1
-        // this.buffer1[x+2][y+1] = Grid.ALIVE_1
-        // this.buffer1[x+3][y+1] = Grid.ALIVE_1
-        // this.buffer1[x+2][y+3] = Grid.ALIVE_1
 
-        // x = 68, y = 69
-        // this.buffer1[x+1][y+1] = Grid.ALIVE_2
-        // this.buffer1[x+1][y+2] = Grid.ALIVE_2
-        // this.buffer1[x+2][y+1] = Grid.ALIVE_2
-        // this.buffer1[x+3][y+1] = Grid.ALIVE_2
-        // this.buffer1[x+2][y+3] = Grid.ALIVE_2
+        this.buffer1[Grid.width - 4][Grid.height - 3] = Grid.ALIVE_1
+        this.buffer1[Grid.width - 3][Grid.height - 3] = Grid.ALIVE_1
+        this.buffer1[Grid.width - 3][Grid.height - 4] = Grid.ALIVE_1
+        this.buffer1[Grid.width - 2][Grid.height - 4] = Grid.ALIVE_1
 
-        // x =63, y = 62
-        // this.buffer1[x+1][y+1] = Grid.ALIVE_3
-        // this.buffer1[x+1][y+2] = Grid.ALIVE_3
-        // this.buffer1[x+2][y+1] = Grid.ALIVE_3
-        // this.buffer1[x+3][y+1] = Grid.ALIVE_3
-        // this.buffer1[x+2][y+3] = Grid.ALIVE_3
     }
 
     setValueAt(x, y, v) {
@@ -276,13 +262,21 @@ export class Grid {
     }
 
     updateGraphics() {
-        if(this.iterations > Main.STAGE_2) {
+        if(this.iterations > Main.STAGE_2_2) {
             this.spriteOffset = 4;
         }
 
         for(let i = 1; i < this.buffer1.length; i++) {
             for(let j = 1; j < this.buffer1[0].length ; j++) {
                 this.tiles[i][j].setSprite(this.buffer1[i][j] + this.spriteOffset)
+            }
+        }
+    }
+
+    setAlpha(a) {
+        for(let i = 1; i < this.buffer1.length; i++) {
+            for(let j = 1; j < this.buffer1[0].length ; j++) {
+                this.tiles[i][j].setAlpha(a);
             }
         }
     }

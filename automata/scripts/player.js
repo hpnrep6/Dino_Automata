@@ -6,7 +6,8 @@ import { isKeyDown } from "../../z0/input/key.js";
 import *  as VAR from '../../z0/var.js'
 import { angleTo } from "../../z0/math/math2d.js";
 import { AARectangle } from "../../z0/physics/primitives/aarectcollider.js";
-import { Main } from "../../index.js";
+import { Main, Menu } from "../../index.js";
+import { getTree } from "../../z0/z0.js";
 
 export class Player extends Sprite2D{
     static SPEED = 100;
@@ -45,6 +46,17 @@ export class Player extends Sprite2D{
             this.spritesheet.createFrame(x, y, size * 2, size);
         }
 
+
+        for(let i = 0; i < 3; i++)
+            this.spritesheet.createFrame(4 * size, i * size * 2, size * 2, size * 2);
+
+        for(let i = 0; i < 3; i++)
+            this.spritesheet.createFrame(6 * size, i * size * 2, size * 2, size * 2);
+
+        for(let i = 0; i < 2; i++)
+            this.spritesheet.createFrame(8 * size, i * size * 2, size * 2, size * 2);
+
+        
         this.maxX = VAR.canvas.width;
         this.maxY = VAR.canvas.height;
 
@@ -77,6 +89,8 @@ export class Player extends Sprite2D{
 
     ended = false;
 
+    dead = false;
+
     constructor(x, y) {
         super(null, TextureManager.player, x, y, Player.width * 2, Player.height, 0, 9, Player.spritesheet);
 
@@ -88,7 +102,40 @@ export class Player extends Sprite2D{
         this.healthbar = new Healthbar(this, -35, 50, 5, this.hp);
     }
 
+    deathdelay = 5;
+    deathanim = 0.8;
+    deathanimstartindex = 8 + 6;
+    deathindex = 0;
+    deathtime = 0;
+
+    deathtriggered = false;
     _update(delta) {
+
+        if(this.dead) {
+            if(!this.deathtriggered) {
+                this.setZ(20);
+                this.deathtriggered = true;
+            }
+            this.getParent().dead.setVisible(true);
+            this.getParent().dead.setAlpha(this.getParent().dead.getAlpha() + delta / 5);
+
+            if(this.deathanim <= 0) {
+                if(this.deathindex < 6)
+                    this.setSprite(this.deathindex + this.deathanimstartindex);
+                else
+                    this.setVisible(false)
+                this.deathindex++;
+                this.deathanim = 0.2;
+            }
+            this.deathanim -= delta;
+            this.deathtime += delta;
+
+            if(this.deathtime > 10) {
+                getTree().setActiveScene(new Menu());
+            }
+
+            return;
+        }
 
         this.animTimer -= delta;
         if(this.animTimer < 0) {
@@ -158,9 +205,13 @@ export class Player extends Sprite2D{
             this.isColliding = false;
             if(this.damageTimer < 0) {
                 this.hp -= 50;
-                this.healthbar.setHP(this.hp);
+                this.healthbar.setHP(Math.max(this.hp,0));
                 this.damageTimer = 2;
             }
+        }
+
+        if(this.hp <= 0) {
+            this.dead = true;
         }
 
         let intX = this.xLoc;

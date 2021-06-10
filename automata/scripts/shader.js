@@ -8,18 +8,6 @@ import { getGL, getCanvas } from "../../z0/z0.js";
  */
 
 const sponge = `
-
-precision highp float;
-varying vec2 vTexCoord;
-varying float vAlpha;
-uniform sampler2D uSampler;
-uniform mediump vec2 uRes;
-uniform mediump float uTime;
-uniform mediump float uTimeDelta;
-uniform vec2 uTranslate;
-uniform float uScale;
-uniform float uRot;
-
 #define MaxSteps 30
 #define MinimumDistance 0.0009
 #define normalDistance     0.0002
@@ -258,5 +246,11 @@ void main()
 export class Sponge extends ShaderSprite2DRenderer {
     constructor() {
         super(getGL(), getCanvas(), null, ShaderSprite2DRenderer.appendDefault(mengar));
+    }
+}
+
+export class Travel extends ShaderSprite2DRenderer {
+    constructor() {
+        super(getGL(), getCanvas(), null, ShaderSprite2DRenderer.appendDefault(sponge));
     }
 }

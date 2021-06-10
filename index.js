@@ -14,7 +14,7 @@ import { Player, Healthbar } from './automata/scripts/player.js';
 import { Dino } from './automata/scripts/dino.js';
 import { UI, Start, Title, Instructions, InstructionScreen, Info } from './automata/scripts/ui.js';
 import { AARectangle } from './z0/physics/primitives/aarectcollider.js';
-import { Sponge } from './automata/scripts/shader.js';
+import { Sponge, Travel } from './automata/scripts/shader.js';
 
 /**
  * Collider layers:
@@ -58,15 +58,17 @@ export class Menu extends Scene {
             let a4 = loadImage('./automata/fonts/fontw.png');
             let a5 = loadImage('./automata/sprites/bkg.png');
             let a6 = loadImage('./automata/sprites/flag.png'),
-            a7 = loadImage('./automata/sprites/menu.png');
+            a7 = loadImage('./automata/sprites/menu.png'),
+            a8 = loadImage('./automata/sprites/dead.png')
 
-            Promise.all([a1, a2, a3, a4, a5, a6, a7]).then( (loaded) => {
+            Promise.all([a1, a2, a3, a4, a5, a6, a7, a8]).then( (loaded) => {
                 TextureManager.sprites = TextureManager.addTexture(loaded[0]);
                 TextureManager.player = TextureManager.addTexture(loaded[1]);
                 TextureManager.font = TextureManager.addTexture(loaded[3]);
                 TextureManager.bkg = TextureManager.addTexture(loaded[4])
                 TextureManager.flag = TextureManager.addTexture(loaded[5]);
                 TextureManager.menu = TextureManager.addTexture(loaded[6]);
+                TextureManager.dead = TextureManager.addTexture(loaded[7])
 
                 AudioManager.background = AudioManager.createAudio('./automata/audio/red.ogg', 0.15);
 
@@ -80,6 +82,7 @@ export class Menu extends Scene {
                 Main.map = drawContext.getImageData(0, 0, drawCanvas.width, drawCanvas.height).data
 
                 Menu.menuBkgRenderer = new Sponge();
+                Main.travelRenderer = new Travel();
                 this.init();
 
                 z0._startUpdates();
@@ -105,7 +108,15 @@ export class Menu extends Scene {
         w = 800;
         new Title(x, 200, w, w * (3/5));
 
-        this.bkg = new ShaderSprite2D(null, Menu.menuBkgRenderer, canvas.width / 2, canvas.height / 2, canvas.width, canvas.height, 0, 0)
+        this.bkg = new ShaderSprite2D(null, Menu.menuBkgRenderer, canvas.width / 2, canvas.height / 2, canvas.width, canvas.height, 0, 0);
+
+        if(Main.party == 6) {
+            document.title = 'Time Safari, Inc.'
+        } else if(Main.party == 7) {
+            document.title = 'Tyme Sefari, Inc.'
+        } else if(Main.party === 8) {
+            document.title = '時間の狩り, Inc.'
+        }
     }
 
     showInstructions() {
@@ -159,9 +170,13 @@ export class Main extends Scene {
     flash;
     fade;
     fade2;
+    death;
     machine;
     machineFlash;
     trees = [];
+
+    travel;
+    travelRenderer;
 
     init() {
 
@@ -218,6 +233,10 @@ export class Main extends Scene {
         this.fade2.setSprite(3);
         this.fade2.setVisible(false);
 
+        this.dead = new Sprite2D(null, TextureManager.dead, canvas.width / 2, canvas.height / 2, canvas.width, canvas.height, 0, 24);
+        this.dead.setAlpha(0);
+        this.dead.setVisible(false);
+
         {
             let ssss = new SpriteSheet(TextureManager.player);
             ssss.createFrame(2 * 32, 6 * 32, 64, 64 + 32);
@@ -243,6 +262,9 @@ export class Main extends Scene {
                 this.trees.push(new Tree(trees[i], trees[i + 1], trees[i + 2]))
             }
         }
+
+        this.travel = new ShaderSprite2D(null, Main.travelRenderer, canvas.width / 2, canvas.height / 2, canvas.width, canvas.height, 0, 4);
+        this.travel.setVisible(false);
     }
 
     iterations = 0;
@@ -250,11 +272,13 @@ export class Main extends Scene {
 
     static CHANGE = 20;
 
-    static STAGE_2 = 50;
+    static STAGE_2 = 200;
 
     static STAGE_2_TRANS_1 = 50;
 
-    static STAGE_3 = Main.STAGE_2 + 67;
+    static STAGE_2_2 = Main.STAGE_2 + 500;
+
+    static STAGE_3 = Main.STAGE_2_2 + 67;
 
     static STAGE_4 = Main.STAGE_3 + 100;
 
@@ -307,7 +331,39 @@ export class Main extends Scene {
                     this.trees.pop().removeSelf();
                 }
             }
+        } else if (this.iterations < Main.STAGE_2_2) {
+
+            if(this.iterations == Main.STAGE_2 + 1) {
+                this.grid.setAlpha(0.12);
+
+            }
+
+
+            this.grid.update();
+            this.grid.updateGraphics();
+            
+            this.iterations++;
+            this.grid.iterations = this.iterations;
+
+            this.flash.setAlpha((Main.STAGE_2 + 10 - this.iterations) / 10);
+
+            if(this.path) {
+                this.path.removeSelf();
+                this.path = undefined;
+            }
+            this.travel.setVisible(true);
+
+            if(this.iterations > Main.STAGE_2_2 - Main.STAGE_2_TRANS_1) {
+                this.flash.setVisible(true);
+                this.flash.setAlpha(1)
+            }
+
         } else if(this.iterations < Main.STAGE_3) {
+
+            if(this.iterations == Main.STAGE_3) {
+                this.grid.setAlpha(0.5);
+            }
+
             if(this.stage_2_count > Main.skip) {
                 this.stage_2_count = 0;
                 this.stage_2_iter++;
@@ -317,15 +373,11 @@ export class Main extends Scene {
                 
                 this.iterations++;
                 this.grid.iterations = this.iterations;
-                this.yearT.setString((1788 + 4 * Math.floor((this.iterations - Main.STAGE_2))).toString())
+                this.yearT.setString((1788 + 4 * Math.floor((this.iterations - Main.STAGE_2_2))).toString())
             }
             this.stage_2_count++;
-            this.flash.setAlpha((Main.STAGE_2 + 10 - this.iterations) / 10);
-
-            if(this.path) {
-                this.path.removeSelf();
-                this.path = undefined;
-            }
+            this.travel.setVisible(false);
+            this.flash.setAlpha((Main.STAGE_2_2 + 10 - this.iterations) / 10);
         } else {
             let arr = [this.rC, this.yC, this.bC];
 
@@ -367,7 +419,7 @@ export class Main extends Scene {
         }
 
 
-        if(this.iterations < Main.STAGE_2) return;
+        if(this.iterations < Main.STAGE_2_2) return;
 
         this.bkg.setSprite(1)
         this.group.updateGraphics();
@@ -429,6 +481,12 @@ class Tree extends Sprite2D {
     constructor(x, y, t) {
         super(null, TextureManager.player, x, y, 200, 200 * (3/2), 0, 10, Tree.spritesheet);
         this.setSprite(t);
+    }
+
+    _update(delta) {
+        if(distance(this.xLoc, this.getParent().dino.xLoc, this.yLoc, this.getParent().dino.yLoc) < 80) {
+            this.setVisible(false)
+        }
     }
 }
 
