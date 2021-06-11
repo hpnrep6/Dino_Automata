@@ -11,7 +11,7 @@ import { getTree } from "../../z0/z0.js";
 
 export class Player extends Sprite2D{
     static SPEED = 100;
-    static DELAY = 0.01;
+    static DELAY = 1;
 
     static col_width = 25;
     static col_height = 25;
@@ -288,7 +288,7 @@ class Bullet extends Sprite2D {
 
     static initSpriteSheet() {
         this.spritesheet = new SpriteSheet(TextureManager.player);
-        this.spritesheet.createFrame(20,20, 2, 2);
+        this.spritesheet.createFrame(505,96, 2, 2);
 
         this.maxX = VAR.canvas.width + Bullet.MAX_EXPAND;
         this.maxY = VAR.canvas.height + Bullet.MAX_EXPAND;
@@ -302,7 +302,7 @@ class Bullet extends Sprite2D {
     inactive = false;
 
     constructor(x, y, rot, vX, vY) {
-        super(null, TextureManager.player, x, y, Bullet.width, Bullet.height, rot, 10, Bullet.spritesheet);
+        super(null, TextureManager.player, x, y, 5, 2, rot, 10, Bullet.spritesheet);
 
         new BulletCol(this);
         this.velX = vX;

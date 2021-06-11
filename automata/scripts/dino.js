@@ -21,7 +21,7 @@ export class Dino extends Sprite2D {
 
     collider;
 
-    hp = 15; //1500
+    hp = 1000; //1500
 
     hurtCounter = 0;
     stunCounter = 0;
