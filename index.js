@@ -442,7 +442,7 @@ export class Main extends Scene {
 
             if(this.iterations > Main.STAGE_6) {
                 this.ending.setVisible(true);
-                this.ending.setY(this.ending.getY() - 50 * 1.25 * delta);
+                this.ending.setY(this.ending.getY() - 50 * 1.05 * delta);
 
                 if(this.ending.getY() < -300) {
                     z0.setActiveScene(new Menu());
