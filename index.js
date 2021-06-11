@@ -59,16 +59,18 @@ export class Menu extends Scene {
             let a5 = loadImage('./automata/sprites/bkg.png');
             let a6 = loadImage('./automata/sprites/flag.png'),
             a7 = loadImage('./automata/sprites/menu.png'),
-            a8 = loadImage('./automata/sprites/dead.png')
+            a8 = loadImage('./automata/sprites/dead.png'),
+            a9 = loadImage('./automata/sprites/ending.png')
 
-            Promise.all([a1, a2, a3, a4, a5, a6, a7, a8]).then( (loaded) => {
+            Promise.all([a1, a2, a3, a4, a5, a6, a7, a8, a9]).then( (loaded) => {
                 TextureManager.sprites = TextureManager.addTexture(loaded[0]);
                 TextureManager.player = TextureManager.addTexture(loaded[1]);
                 TextureManager.font = TextureManager.addTexture(loaded[3]);
                 TextureManager.bkg = TextureManager.addTexture(loaded[4])
                 TextureManager.flag = TextureManager.addTexture(loaded[5]);
                 TextureManager.menu = TextureManager.addTexture(loaded[6]);
-                TextureManager.dead = TextureManager.addTexture(loaded[7])
+                TextureManager.dead = TextureManager.addTexture(loaded[7]);
+                TextureManager.end = TextureManager.addTexture(loaded[8]);
 
                 AudioManager.background = AudioManager.createAudio('./automata/audio/red.ogg', 0.15);
 
@@ -178,6 +180,8 @@ export class Main extends Scene {
     travel;
     travelRenderer;
 
+    ending;
+
     init() {
 
         Grid.init();
@@ -237,6 +241,19 @@ export class Main extends Scene {
         this.dead.setAlpha(0);
         this.dead.setVisible(false);
 
+
+        let ssss = new SpriteSheet(TextureManager.end)
+        let wwww = 682;
+
+        ssss.createFrame(0 * wwww, 0, wwww, 2048);
+        ssss.createFrame(1 + wwww, 0, wwww, 2048);
+        ssss.createFrame(2 + 2 * wwww, 0, wwww, 2048);
+
+        let hi = (canvas.width / wwww) * 2048;
+
+        this.ending = new Sprite2D(null, TextureManager.end, canvas.width / 2, hi - 500, canvas.width, hi, 0, 26, ssss);
+        this.ending.setVisible(false);
+        
         {
             let ssss = new SpriteSheet(TextureManager.player);
             ssss.createFrame(2 * 32, 6 * 32, 64, 64 + 32);
@@ -273,7 +290,7 @@ export class Main extends Scene {
 
     static CHANGE = 20;
 
-    static STAGE_2 = 200;
+    static STAGE_2 = 400;
 
     static STAGE_2_TRANS_1 = 50;
 
@@ -281,25 +298,26 @@ export class Main extends Scene {
 
     static STAGE_3 = Main.STAGE_2_2 + 67;
 
-    static STAGE_4 = Main.STAGE_3 + 100;
+    static STAGE_4 = Main.STAGE_3 + 300;
 
-    static STAGE_5 = Main.STAGE_4 + 100;
+    static STAGE_5 = Main.STAGE_4 + 300;
+
+    static STAGE_6 = Main.STAGE_5 + 200;
 
     stage_2_count = 0;
 
-    static skip = 10;
+    static skip = 2;
 
     stage_2_iter = 0;
 
     canEnd = false;
 
-
+    winner;
 
     // 2056 - 1788
     // 67
 
     _update(delta) {
-
         if(delta == 0) {
             return;
         }
@@ -359,7 +377,7 @@ export class Main extends Scene {
         } else if(this.iterations < Main.STAGE_3) {
 
             if(this.iterations == Main.STAGE_3) {
-                this.grid.setAlpha(0.9);
+                this.grid.setAlpha(1);
             }
 
             if(this.stage_2_count > Main.skip) {
@@ -387,17 +405,24 @@ export class Main extends Scene {
                 }
             }
 
-            switch(index) {
-                case 0:
-                    Main.party = 6;
-                    break;
-                case 1:
-                    Main.party = 7;
-                    break;
-                case 2:
-                    Main.party = 8;
-                    break;
-            }
+            if(!this.winner) 
+                switch(index) {
+                    case 0:
+                        Main.party = 6;
+                        this.winner = 0;
+                        this.ending.setSprite(0);
+                        break;
+                    case 1:
+                        Main.party = 7;
+                        this.winner = 1;
+                        this.ending.setSprite(2);
+                        break;
+                    case 2:
+                        Main.party = 8;
+                        this.winner = 2;
+                        this.ending.setSprite(1);
+                        break;
+                }
 
             if(!this.eT) {
                 this.eT = new ElectionRes(canvas.width / 2, canvas.height / 2 + 100, 230, index)
@@ -407,21 +432,32 @@ export class Main extends Scene {
 
             if(this.iterations > Main.STAGE_4) {
                 this.fade.setVisible(true);
-                this.fade.setAlpha(this.fade.getAlpha() + delta/ 5);
+                this.fade.setAlpha(this.fade.getAlpha() + delta/2);
             }
 
             if(this.iterations > Main.STAGE_5) {
                 this.fade2.setVisible(true);
-                this.fade2.setAlpha(this.fade.getAlpha() + delta/ 5);
+                this.fade2.setAlpha(this.fade2.getAlpha() + delta/ 5);
+            }
+
+            if(this.iterations > Main.STAGE_6) {
+                this.ending.setVisible(true);
+                this.ending.setY(this.ending.getY() - 50 * delta);
+
+                if(this.ending.getY() < -300) {
+                    z0.setActiveScene(new Menu());
+                    return;
+                }
             }
         }
 
 
         if(this.iterations < Main.STAGE_2_2) return;
 
-        if(this.bkg.getZ() != 6)
+        if(this.bkg.getZ() != 6) {
             this.bkg.setSprite(1)
             this.bkg.setZ(6)
+        }
 
         this.group.updateGraphics();
 
