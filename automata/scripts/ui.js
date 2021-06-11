@@ -1,4 +1,4 @@
-import { Main, Menu } from '../../index.js';
+import { Main, Menu, Intro } from '../../index.js';
 import { SpriteSheet } from '../../z0/graphics/spritesheet.js';
 import { Sprite2D } from '../../z0/graphics/sprite2d.js';
 import *  as VAR from '../../z0/var.js'
@@ -244,7 +244,7 @@ export class Start extends UI {
 
 export class InfoButton extends Start {
     onPress() {
-        getTree().setActiveScene(new Main());
+       this.getParent().startIntro();
     }
 
     check() {

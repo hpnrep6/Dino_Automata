@@ -322,7 +322,7 @@ export class GridGroup {
             this.tiles.push([])
 
             for(let j = 0; j < GridGroup.height; j++) {
-                this.tiles[i][j] = new Tile(i * GridGroup.size + this.xLoc, j * GridGroup.size + this.yLoc, this.parent, 4, GridGroup.size);
+                this.tiles[i][j] = new Tile(i * GridGroup.size + this.xLoc, j * GridGroup.size + this.yLoc, this.parent, 2, GridGroup.size);
                 this.tiles[i][j].setAlpha(0.7)
             }
         }

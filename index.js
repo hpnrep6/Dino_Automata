@@ -44,6 +44,8 @@ export class Menu extends Scene {
 
     static menuBkgRenderer;
     bkg;
+    
+    fade;
 
     constructor() {
         super(200);
@@ -60,9 +62,10 @@ export class Menu extends Scene {
             let a6 = loadImage('./automata/sprites/flag.png'),
             a7 = loadImage('./automata/sprites/menu.png'),
             a8 = loadImage('./automata/sprites/dead.png'),
-            a9 = loadImage('./automata/sprites/ending.png')
+            a9 = loadImage('./automata/sprites/ending.png'),
+            a10 = loadImage('./automata/sprites/intro.png');
 
-            Promise.all([a1, a2, a3, a4, a5, a6, a7, a8, a9]).then( (loaded) => {
+            Promise.all([a1, a2, a3, a4, a5, a6, a7, a8, a9, a10]).then( (loaded) => {
                 TextureManager.sprites = TextureManager.addTexture(loaded[0]);
                 TextureManager.player = TextureManager.addTexture(loaded[1]);
                 TextureManager.font = TextureManager.addTexture(loaded[3]);
@@ -71,6 +74,7 @@ export class Menu extends Scene {
                 TextureManager.menu = TextureManager.addTexture(loaded[6]);
                 TextureManager.dead = TextureManager.addTexture(loaded[7]);
                 TextureManager.end = TextureManager.addTexture(loaded[8]);
+                TextureManager.intro = TextureManager.addTexture(loaded[9]);
 
                 AudioManager.background = AudioManager.createAudio('./automata/audio/red.ogg', 0.15);
 
@@ -85,6 +89,8 @@ export class Menu extends Scene {
 
                 Menu.menuBkgRenderer = new Sponge();
                 Main.travelRenderer = new Travel();
+
+                Menu.loaded = true;
                 this.init();
 
                 z0._startUpdates();
@@ -112,6 +118,11 @@ export class Menu extends Scene {
 
         this.bkg = new ShaderSprite2D(null, Menu.menuBkgRenderer, canvas.width / 2, canvas.height / 2, canvas.width, canvas.height, 0, 0);
 
+        let s = new SpriteSheet(TextureManager.player);
+        s.createFrame(510, 55, 1, 1);
+
+        this.fade = new Sprite2D(this, TextureManager.player, canvas.width /2, canvas.height / 2, canvas.width, canvas.height, 0, 30, s);
+
         if(Main.party == 6) {
             document.title = 'Time Safari, Inc.'
         } else if(Main.party == 7) {
@@ -119,6 +130,8 @@ export class Menu extends Scene {
         } else if(Main.party === 8) {
             document.title = '時間の狩り, Inc.'
         }
+
+        this.setBackgroundColour(0,0,0,1);
     }
 
     showInstructions() {
@@ -129,9 +142,64 @@ export class Menu extends Scene {
         new Info(canvas.width / 2, canvas.height / 2, 700, 700);
     }
 
+    startIntro() {
+        this.started = true;
+    }
+
+    started = false;
+    timer = 2;
+
     _update(delta) {
         if(this.mouseCol)
             this.mouseCol.setLoc(getMouseX(), getMouseY());
+
+        if(this.fade.getAlpha() < 2 && this.fade.getAlpha() > -1 && !this.started) {
+            this.fade.setAlpha(this.fade.getAlpha() - delta / 2)
+        }
+
+        if(this.started) {
+            this.timer -= delta;
+
+            this.fade.setAlpha((2 - this.timer) / 2)
+            if(this.timer < 0) {
+                z0.getTree().setActiveScene(new Intro());
+                return;
+            }
+        }
+    }
+}
+
+export class Intro extends Scene {
+    constructor() {
+        super(3000)
+        this.setBackgroundColour(0,0,0,1);
+        new Sprite2D(this, TextureManager.intro, canvas.width / 2, canvas.height / 2, canvas.width, canvas.height, 0 , 1)
+
+        let s = new SpriteSheet(TextureManager.player);
+        s.createFrame(510, 55, 1, 1);
+        this.black = new Sprite2D(this, TextureManager.player, canvas.width - 250, canvas.height - 25, 500, 50, 0, 2, s);
+
+        this.fade = new Sprite2D(this, TextureManager.player, canvas.width /2, canvas.height / 2, canvas.width, canvas.height, 0, 30, s);
+
+    }
+
+    fTime = 0;
+
+    _update(delta) {
+        if(Key.isKeyDown(' ')) {
+            z0.setActiveScene(new Main());
+            return;
+        }
+
+        if(this.fade.getAlpha() > 0)
+            this.fade.setAlpha(this.fade.getAlpha() - delta);
+
+        this.fTime -= delta;
+
+        if(this.fTime < 0) {
+            this.black.setAlpha(!this.black.getAlpha())
+            this.fTime = 1;
+        }
     }
 }
 
@@ -197,7 +265,7 @@ export class Main extends Scene {
         
         this.grid = new Grid();
         this.player = new Player(475, 50)
-        this.dino = new Dino(920, 900)
+        this.dino = new Dino(500, 1500)
         this.path = new GridPath(Main.map)
         this.group = new GridGroup();
 
@@ -236,6 +304,10 @@ export class Main extends Scene {
         this.fade2.setAlpha(0)
         this.fade2.setSprite(3);
         this.fade2.setVisible(false);
+
+        this.fade3 = new Sprite2D(null, TextureManager.player, canvas.width / 2, canvas.height / 2, canvas.width, canvas.height, 0, 30, sss);
+        this.fade3.setAlpha(2)
+        this.fade3.setSprite(3);
 
         this.dead = new Sprite2D(null, TextureManager.dead, canvas.width / 2, canvas.height / 2, canvas.width, canvas.height, 0, 24);
         this.dead.setAlpha(0);
@@ -282,7 +354,7 @@ export class Main extends Scene {
 
         this.travel = new ShaderSprite2D(null, Main.travelRenderer, canvas.width / 2, canvas.height / 2, canvas.width, canvas.height, 0, 4);
         this.travel.setVisible(false);
-        this.setBackgroundColour(1,1,1,1);
+        this.setBackgroundColour(0,0,0,1);
     }
 
     iterations = 0;
@@ -306,7 +378,7 @@ export class Main extends Scene {
 
     stage_2_count = 0;
 
-    static skip = 10;
+    static skip = 20;
 
     stage_2_iter = 0;
 
@@ -327,7 +399,13 @@ export class Main extends Scene {
             return;
         }
 
+        if(this.fade3.getAlpha() > 0) {
+            this.fade3.setAlpha(this.fade3.getAlpha() - delta)
+        }
+        
         if(!this.startedEnd) return;
+
+        this.setBackgroundColour(1,1,1,1)
 
         if(this.iterations < Main.STAGE_2) {
 

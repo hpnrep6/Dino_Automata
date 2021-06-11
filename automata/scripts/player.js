@@ -63,7 +63,7 @@ export class Player extends Sprite2D{
         Bullet.initSpriteSheet();
     }
 
-    hp = 200;
+    hp = 105;
 
     velX = 0;
     velY = 0;
