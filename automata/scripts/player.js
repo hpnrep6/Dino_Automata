@@ -212,6 +212,7 @@ export class Player extends Sprite2D{
 
         if(this.hp <= 0) {
             this.dead = true;
+            this.getParent().dino.hp = 10000;
         }
 
         let intX = this.xLoc;
