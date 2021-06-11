@@ -306,7 +306,7 @@ export class Main extends Scene {
 
     stage_2_count = 0;
 
-    static skip = 2;
+    static skip = 10;
 
     stage_2_iter = 0;
 
