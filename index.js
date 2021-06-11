@@ -170,6 +170,8 @@ export class Menu extends Scene {
 }
 
 export class Intro extends Scene {
+    static used;
+
     constructor() {
         super(3000)
         this.setBackgroundColour(0,0,0,1);
@@ -180,14 +182,19 @@ export class Intro extends Scene {
         this.black = new Sprite2D(this, TextureManager.player, canvas.width - 250, canvas.height - 25, 500, 50, 0, 2, s);
 
         this.fade = new Sprite2D(this, TextureManager.player, canvas.width /2, canvas.height / 2, canvas.width, canvas.height, 0, 30, s);
-
     }
 
     fTime = 0;
 
     _update(delta) {
+        if(Intro.used) {
+            z0.setActiveScene(new Main());
+            return;
+        }
+
         if(Key.isKeyDown(' ')) {
             z0.setActiveScene(new Main());
+            Intro.used = true;
             return;
         }
 
