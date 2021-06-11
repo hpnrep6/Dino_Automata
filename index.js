@@ -362,7 +362,7 @@ export class Main extends Scene {
 
     static CHANGE = 20;
 
-    static STAGE_2 = 400;
+    static STAGE_2 = 500;
 
     static STAGE_2_TRANS_1 = 50;
 
