@@ -76,11 +76,9 @@ export class Menu extends Scene {
                 TextureManager.end = TextureManager.addTexture(loaded[8]);
                 TextureManager.intro = TextureManager.addTexture(loaded[9]);
 
-                AudioManager.background = AudioManager.createAudio('./automata/audio/red.ogg', 0.15);
-
-                AudioManager.wallPlace = AudioManager.createAudio('./automata/audio/thump.wav', 0.4);
-
-                AudioManager.next = AudioManager.createAudio('./automata/audio/pop.flac', 0.4);
+                AudioManager.start = AudioManager.createAudio('./automata/audio/logan.mp3', 0.18);
+                AudioManager.game = AudioManager.createAudio('./automata/audio/jerry.mp3', 0.18);
+                AudioManager.end = AudioManager.createAudio('./automata/audio/albert.mp3', 0.18);
 
                 drawCanvas.width = loaded[2].width;
                 drawCanvas.height = loaded[2].height;
@@ -132,6 +130,8 @@ export class Menu extends Scene {
         }
 
         this.setBackgroundColour(0,0,0,1);
+
+        
     }
 
     showInstructions() {
@@ -153,6 +153,12 @@ export class Menu extends Scene {
         if(this.mouseCol)
             this.mouseCol.setLoc(getMouseX(), getMouseY());
 
+        try{
+            AudioManager.playLoop(AudioManager.start);
+        } catch(e) {
+
+        }
+
         if(this.fade.getAlpha() < 2 && this.fade.getAlpha() > -1 && !this.started) {
             this.fade.setAlpha(this.fade.getAlpha() - delta / 2)
         }
@@ -162,6 +168,7 @@ export class Menu extends Scene {
 
             this.fade.setAlpha((2 - this.timer) / 2)
             if(this.timer < 0) {
+                AudioManager.stop(AudioManager.start)
                 z0.getTree().setActiveScene(new Intro());
                 return;
             }
@@ -362,6 +369,8 @@ export class Main extends Scene {
         this.travel = new ShaderSprite2D(null, Main.travelRenderer, canvas.width / 2, canvas.height / 2, canvas.width, canvas.height, 0, 4);
         this.travel.setVisible(false);
         this.setBackgroundColour(0,0,0,1);
+
+        AudioManager.playLoop(AudioManager.game);
     }
 
     iterations = 0;
@@ -402,6 +411,8 @@ export class Main extends Scene {
         }
 
         if(Key.isKeyDown('escape')) {
+            AudioManager.stop(AudioManager.game)
+            AudioManager.stop(AudioManager.end)
             z0.getTree().setActiveScene(new Menu());
             return;
         }
@@ -490,7 +501,7 @@ export class Main extends Scene {
                 }
             }
 
-            if(!this.winner) 
+            if(!this.winner) {
                 switch(index) {
                     case 0:
                         Main.party = 6;
@@ -508,6 +519,8 @@ export class Main extends Scene {
                         this.ending.setSprite(1);
                         break;
                 }
+                AudioManager.stop(AudioManager.game);
+            }
 
             if(!this.eT) {
                 this.eT = new ElectionRes(canvas.width / 2, canvas.height / 2 + 100, 230, index)
@@ -526,10 +539,12 @@ export class Main extends Scene {
             }
 
             if(this.iterations > Main.STAGE_6) {
+                AudioManager.play(AudioManager.end);
                 this.ending.setVisible(true);
                 this.ending.setY(this.ending.getY() - 50 * 1.05 * delta);
 
                 if(this.ending.getY() < -300) {
+                    AudioManager.stop(AudioManager.end);
                     z0.setActiveScene(new Menu());
                     return;
                 }
