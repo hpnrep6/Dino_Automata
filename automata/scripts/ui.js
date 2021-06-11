@@ -204,8 +204,14 @@ export class Start extends UI {
         this.h = h;
     }
 
+    lastState = Main.STATE_MENU;
+
     _update(delta) {
-        if(this.check()) return;
+        
+        if(this.check()) {
+            this.lastState = Main.STATE_INSTRU;
+            return;
+        }
 
         super._update(delta);
         this.acc += delta;
@@ -228,7 +234,10 @@ export class Start extends UI {
     }
 
     onPress() {
-        this.getParent().startGame();
+        if(this.lastState == Main.STATE_INSTRU) {
+            this.lastState = Main.STATE_MENU;
+        } else 
+            this.getParent().startGame();
     }
 }
 
