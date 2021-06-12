@@ -76,9 +76,15 @@ export class Menu extends Scene {
                 TextureManager.end = TextureManager.addTexture(loaded[8]);
                 TextureManager.intro = TextureManager.addTexture(loaded[9]);
 
-                AudioManager.start = AudioManager.createAudio('./automata/audio/logan.mp3', 0.18);
-                AudioManager.game = AudioManager.createAudio('./automata/audio/jerry.mp3', 0.18);
-                AudioManager.end = AudioManager.createAudio('./automata/audio/albert.mp3', 0.18);
+                AudioManager.start = AudioManager.createAudio('./automata/audio/logan.mp3', 0.3);
+                AudioManager.game = AudioManager.createAudio('./automata/audio/jerry.mp3', 0.3);
+                AudioManager.end = AudioManager.createAudio('./automata/audio/albert.mp3', 0.3);
+                
+                AudioManager.hover = AudioManager.createAudio('./automata/audio/hover.ogg', 0.5);
+                AudioManager.hurt = AudioManager.createAudio('./automata/audio/hurt.wav', 0.5);
+                AudioManager.roarStart = AudioManager.createAudio('./automata/audio/roarStart.wav', 0.5);
+                AudioManager.roarHurt = AudioManager.createAudio('./automata/audio/roarHurt.wav', 0.5);
+                AudioManager.shot = AudioManager.createAudio('./automata/audio/shot.wav', 0.5);
 
                 drawCanvas.width = loaded[2].width;
                 drawCanvas.height = loaded[2].height;
@@ -130,8 +136,6 @@ export class Menu extends Scene {
         }
 
         this.setBackgroundColour(0,0,0,1);
-
-        
     }
 
     showInstructions() {
@@ -255,6 +259,7 @@ export class Main extends Scene {
     fade;
     fade2;
     death;
+    hurt;
     machine;
     machineFlash;
     trees = [];
@@ -327,6 +332,12 @@ export class Main extends Scene {
         this.dead.setAlpha(0);
         this.dead.setVisible(false);
 
+        let sssss = new SpriteSheet(TextureManager.dead)
+        sssss.createFrame(200, 200, 1, 1);
+
+        this.hurt = new Sprite2D(null, TextureManager.dead, canvas.width / 2, canvas.height / 2, canvas.width, canvas.height, 0, 30, sssss);
+        this.hurt.setAlpha(0);
+        this.hurt.setVisible(false)
 
         let ssss = new SpriteSheet(TextureManager.end)
         let wwww = 682;
@@ -371,6 +382,12 @@ export class Main extends Scene {
         this.setBackgroundColour(0,0,0,1);
 
         AudioManager.playLoop(AudioManager.game);
+    }
+
+    damageEffects() {
+        this.hurt.setAlpha(1);
+        this.hurt.setVisible(true);
+        AudioManager.playBurst(AudioManager.hurt);
     }
 
     iterations = 0;
@@ -419,6 +436,12 @@ export class Main extends Scene {
 
         if(this.fade3.getAlpha() > 0) {
             this.fade3.setAlpha(this.fade3.getAlpha() - delta)
+        }
+
+        if(this.hurt.getAlpha() > 0) {
+            this.hurt.setAlpha(this.hurt.getAlpha() - delta * 2)
+        } else {
+            this.hurt.setVisible(false);
         }
         
         if(!this.startedEnd) return;

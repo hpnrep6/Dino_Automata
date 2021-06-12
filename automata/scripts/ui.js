@@ -8,6 +8,7 @@ import { BitmapText } from '../fonts/bitmaptext.js';
 import { AARectangle } from '../../z0/physics/primitives/aarectcollider.js';
 import { isDown } from '../../z0/input/mouse.js';
 import { getTree } from '../../z0/z0.js';
+import { AudioManager } from '../../z0/audio/audiomanager.js';
 
 export class UI extends Sprite2D {
     static spritesheet;
@@ -66,9 +67,10 @@ export class UI extends Sprite2D {
         this.collider = new UICol(this, x, y, w, h)
     }
 
-    hover = false;
+    hovering = false;
     colliding = false;
     pressed = false;
+    wasHovering = false;
 
     _update(delta) {
         if(this.colliding) {
@@ -83,10 +85,21 @@ export class UI extends Sprite2D {
             }
         }
         this.colliding = false;
+
+        if(this.hovering) {
+            if(!this.wasHovering) {
+                this.wasHovering = true;
+                AudioManager.playAudio(AudioManager.hover);
+            }
+        } else {
+            this.wasHovering = false;
+        }
+        
+        this.hovering = false;
     }
 
     onHover() {
-
+        this.hovering = true;
     }
 
     onPress() {
@@ -127,6 +140,9 @@ export class Info extends UI {
         let ww = 340;
         new InfoButton(650, 710, ww, ww/3, this)
     }
+    onHover(){
+        
+    }
 } 
 
 
@@ -145,6 +161,10 @@ export class InstructionScreen extends UI {
 
         this.setSprite(this.index);
         
+    }
+
+    onHover() {
+
     }
 }
 
@@ -176,6 +196,7 @@ export class InstructionNext extends UI {
     }
 
     onHover() {
+        super.onHover();
         this.hover =true;
     }
 
@@ -229,8 +250,10 @@ export class Start extends UI {
     }
 
     onHover() {
+        if(UI.state === UI.STATE_MENU) {
+            super.onHover();
+        }
         this.hover =true;
-    
     }
 
     onPress() {
@@ -286,6 +309,9 @@ export class Instructions extends UI {
     }
 
     onHover() {
+        if(UI.state === UI.STATE_MENU) {
+            super.onHover();
+        }
         this.hover =true;
     
     }
@@ -320,6 +346,8 @@ export class Title extends UI {
     }
 
     onHover() {
+        if(UI.state === UI.STATE_MENU)
+            super.onHover();
         this.hover =true;
     
     }

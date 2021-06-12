@@ -8,6 +8,7 @@ import { angleTo } from "../../z0/math/math2d.js";
 import { AARectangle } from "../../z0/physics/primitives/aarectcollider.js";
 import { Main, Menu } from "../../index.js";
 import { getTree } from "../../z0/z0.js";
+import { AudioManager } from "../../z0/audio/audiomanager.js";
 
 export class Player extends Sprite2D{
     static SPEED = 100;
@@ -61,6 +62,7 @@ export class Player extends Sprite2D{
         this.maxY = VAR.canvas.height;
 
         Bullet.initSpriteSheet();
+        PlayerAim.initSpriteSheet();
     }
 
     hp = 105;
@@ -91,6 +93,8 @@ export class Player extends Sprite2D{
 
     dead = false;
 
+    aim;
+
     constructor(x, y) {
         super(null, TextureManager.player, x, y, Player.width * 2, Player.height, 0, 9, Player.spritesheet);
 
@@ -100,6 +104,7 @@ export class Player extends Sprite2D{
         this.lastY = this.yLoc;
 
         this.healthbar = new Healthbar(this, -35, 50, 5, this.hp);
+        this.aim = new PlayerAim(this)
     }
 
     deathdelay = 5;
@@ -109,6 +114,8 @@ export class Player extends Sprite2D{
     deathtime = 0;
 
     deathtriggered = false;
+
+    angle = 0;
     _update(delta) {
 
         if(this.dead) {
@@ -185,15 +192,20 @@ export class Player extends Sprite2D{
 
         this.setLoc(Math.min(Math.max(this.getX() + this.velX, 0), Player.maxX), Math.min(Math.max(this.getY() + this.velY, 0), Player.maxY));
 
+        let xTarg = getMouseX();
+        let yTarg = getMouseY();
+
+        let angle = angleTo(this.xLoc, xTarg, this.yLoc, yTarg);
+
+        this.angle = angle;
+
         if(isDown() && this.fireDelay <= 0) {
-
-            let xTarg = getMouseX();
-            let yTarg = getMouseY();
-
-
-            this.createBullet(xTarg, yTarg);
+            
+            this.createBullet(angle);
 
             this.fireDelay = Player.DELAY;
+
+            AudioManager.playBurst(AudioManager.shot)
 
         } else {
             this.fireDelay -= delta;
@@ -206,7 +218,8 @@ export class Player extends Sprite2D{
             if(this.damageTimer < 0) {
                 this.hp -= 50;
                 this.healthbar.setHP(Math.max(this.hp,0));
-                this.damageTimer = 2;
+                this.damageTimer = 3;
+                this.getParent().damageEffects();
             }
         }
 
@@ -245,16 +258,16 @@ export class Player extends Sprite2D{
      * @param {Number} xTarg 
      * @param {Number} yTarg 
      */
-    createBullet(xTarg, yTarg) {
+    createBullet(angle) {
 
         for(let i = 0; i < this.pool.length; i++) {
             if(this.pool[i].inactive) {
-                this.pool[i].init(this.xLoc, this.yLoc, angleTo(this.xLoc, xTarg, this.yLoc, yTarg), this.velX, this.velY);
+                this.pool[i].init(this.xLoc, this.yLoc, angle, this.velX, this.velY);
                 return;
             }
         }
        
-        this.pool.push(new Bullet(this.xLoc, this.yLoc, angleTo(this.xLoc, xTarg, this.yLoc, yTarg), this.velX, this.velY));
+        this.pool.push(new Bullet(this.xLoc, this.yLoc, angle, this.velX, this.velY));
     }
 
     end() {
@@ -272,6 +285,24 @@ export class PlayerCol extends AARectangle {
 
     _onCollision(body) {
         this.parent.isColliding = true;
+    }
+}
+
+export class PlayerAim extends Sprite2D {
+    static spritesheet;
+
+    static initSpriteSheet() {
+        this.spritesheet = new SpriteSheet(TextureManager.player);
+        this.spritesheet.createFrame(0, 12 * 32, 32 * 2, 32 * 2);
+    }
+
+    constructor(p) {
+        super(p, TextureManager.player, 0, 0, 200, 200, 0, 7, PlayerAim.spritesheet);
+        this.setAlpha(0.6)
+    }
+
+    _update(delta) {
+        this.setRot(this.getParent().angle)
     }
 }
 
