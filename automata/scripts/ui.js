@@ -1,4 +1,4 @@
-import { Main, Menu } from '../../index.js';
+import { Main, Menu, Intro } from '../../index.js';
 import { SpriteSheet } from '../../z0/graphics/spritesheet.js';
 import { Sprite2D } from '../../z0/graphics/sprite2d.js';
 import *  as VAR from '../../z0/var.js'
@@ -8,6 +8,7 @@ import { BitmapText } from '../fonts/bitmaptext.js';
 import { AARectangle } from '../../z0/physics/primitives/aarectcollider.js';
 import { isDown } from '../../z0/input/mouse.js';
 import { getTree } from '../../z0/z0.js';
+import { AudioManager } from '../../z0/audio/audiomanager.js';
 
 export class UI extends Sprite2D {
     static spritesheet;
@@ -66,9 +67,10 @@ export class UI extends Sprite2D {
         this.collider = new UICol(this, x, y, w, h)
     }
 
-    hover = false;
+    hovering = false;
     colliding = false;
     pressed = false;
+    wasHovering = false;
 
     _update(delta) {
         if(this.colliding) {
@@ -83,10 +85,21 @@ export class UI extends Sprite2D {
             }
         }
         this.colliding = false;
+
+        if(this.hovering) {
+            if(!this.wasHovering) {
+                this.wasHovering = true;
+                AudioManager.playAudio(AudioManager.hover);
+            }
+        } else {
+            this.wasHovering = false;
+        }
+        
+        this.hovering = false;
     }
 
     onHover() {
-
+        this.hovering = true;
     }
 
     onPress() {
@@ -127,6 +140,9 @@ export class Info extends UI {
         let ww = 340;
         new InfoButton(650, 710, ww, ww/3, this)
     }
+    onHover(){
+        
+    }
 } 
 
 
@@ -145,6 +161,10 @@ export class InstructionScreen extends UI {
 
         this.setSprite(this.index);
         
+    }
+
+    onHover() {
+
     }
 }
 
@@ -176,6 +196,7 @@ export class InstructionNext extends UI {
     }
 
     onHover() {
+        super.onHover();
         this.hover =true;
     }
 
@@ -204,8 +225,14 @@ export class Start extends UI {
         this.h = h;
     }
 
+    lastState = UI.STATE_MENU;
+
     _update(delta) {
-        if(this.check()) return;
+        
+        if(this.check()) {
+            this.lastState = UI.STATE_INSTRU;
+            return;
+        }
 
         super._update(delta);
         this.acc += delta;
@@ -223,19 +250,24 @@ export class Start extends UI {
     }
 
     onHover() {
+        if(UI.state === UI.STATE_MENU) {
+            super.onHover();
+        }
         this.hover =true;
-    
     }
 
     onPress() {
-        this.getParent().startGame();
+        if(this.lastState == UI.STATE_INSTRU) {
+            this.lastState = UI.STATE_MENU;
+        } else 
+            this.getParent().startGame();
     }
 }
 
 
 export class InfoButton extends Start {
     onPress() {
-        getTree().setActiveScene(new Main());
+       this.getParent().startIntro();
     }
 
     check() {
@@ -277,6 +309,9 @@ export class Instructions extends UI {
     }
 
     onHover() {
+        if(UI.state === UI.STATE_MENU) {
+            super.onHover();
+        }
         this.hover =true;
     
     }
@@ -311,6 +346,8 @@ export class Title extends UI {
     }
 
     onHover() {
+        if(UI.state === UI.STATE_MENU)
+            super.onHover();
         this.hover =true;
     
     }

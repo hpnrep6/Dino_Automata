@@ -8,6 +8,7 @@ import { angleTo, distance } from "../../z0/math/math2d.js";
 import { Player, Healthbar } from "./player.js";
 import { AARectangle } from "../../z0/physics/primitives/aarectcollider.js";
 import { Main } from "../../index.js";
+import { AudioManager } from "../../z0/audio/audiomanager.js";
 
 export class Dino extends Sprite2D {
     static SPEED = 60;
@@ -21,7 +22,7 @@ export class Dino extends Sprite2D {
 
     collider;
 
-    hp = 15; //1500
+    hp = 1000; //1500
 
     hurtCounter = 0;
     stunCounter = 0;
@@ -51,7 +52,9 @@ export class Dino extends Sprite2D {
         super(null, TextureManager.player, x, y, Dino.width * 2, Dino.height, 0, 11, Dino.spritesheet);
         this.collider = new DinoCol(this);
 
-        this.healthbar = new Healthbar(this, -100, 200, 10, this.hp)
+        this.healthbar = new Healthbar(this, -100, 200, 10, this.hp);
+
+        AudioManager.playAudio(AudioManager.roarStart)
     }
 
     lastX = 0;
@@ -170,7 +173,9 @@ export class Dino extends Sprite2D {
         this.hurtCounter = 0.5;
         this.stunCounter = 0.2;
 
-        this.healthbar.setHP(Math.max(this.hp, 0))
+        this.healthbar.setHP(Math.max(this.hp, 0));
+
+        AudioManager.playBurst(AudioManager.roarHurt)
     }
 
     end() {

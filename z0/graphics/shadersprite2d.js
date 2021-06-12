@@ -351,7 +351,8 @@ export class ShaderSprite2DRenderer {
         gl.enableVertexAttribArray(this.info.aLoc.aTransform1);
         gl.vertexAttribPointer(this.info.aLoc.aTransform1, 3, gl.FLOAT, false, 0, 0);
 
-        gl.uniform1fv(this.info.uLoc.uTime, [z0.getElapsedTime()]);
+        // Convert milliseconds to seconds
+        gl.uniform1fv(this.info.uLoc.uTime, [z0.getElapsedTime() / 1000]);
 
         gl.uniform1fv(this.info.uLoc.uTimeDelta, [z0.getDeltaTime()]);
 
