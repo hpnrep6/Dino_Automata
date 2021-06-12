@@ -12,4 +12,4 @@
 - [Hover 1](https://freesound.org/people/plasterbrain/sounds/237422/)
 
 ### Images
-- [USA location map.svg](https://en.wikipedia.org/wiki/File:USA_location_map.svg) Modified to include transparency. Original image by NordNordWest. License: [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/deed.en)
+- [USA location map.svg](https://en.wikipedia.org/wiki/File:USA_location_map.svg). Modified to include transparency. Original image by NordNordWest. License: [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/deed.en)
