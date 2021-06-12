@@ -1,3 +1,7 @@
+## Description
+
+Game inspired by [A Sound of Thunder](https://en.wikipedia.org/wiki/A_Sound_of_Thunder) by Ray Bradbury.
+
 ## Credits
 
 ### Audio
