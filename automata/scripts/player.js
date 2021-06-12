@@ -125,7 +125,9 @@ export class Player extends Sprite2D{
             }
             this.getParent().dead.setVisible(true);
             this.getParent().dead.setAlpha(this.getParent().dead.getAlpha() + delta / 5);
-
+            
+            AudioManager.stop(AudioManager.game)
+            
             if(this.deathanim <= 0) {
                 if(this.deathindex < 6)
                     this.setSprite(this.deathindex + this.deathanimstartindex);
