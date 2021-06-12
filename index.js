@@ -84,7 +84,7 @@ export class Menu extends Scene {
                 AudioManager.hurt = AudioManager.createAudio('./automata/audio/hurt.wav', 0.5);
                 AudioManager.roarStart = AudioManager.createAudio('./automata/audio/roarStart.wav', 0.5);
                 AudioManager.roarHurt = AudioManager.createAudio('./automata/audio/roarHurt.wav', 0.5);
-                AudioManager.shot = AudioManager.createAudio('./automata/audio/shot.wav', 0.5);
+                AudioManager.shot = AudioManager.createAudio('./automata/audio/shot.wav', 0.3);
 
                 drawCanvas.width = loaded[2].width;
                 drawCanvas.height = loaded[2].height;
