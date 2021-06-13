@@ -1,4 +1,4 @@
-# [Live Version](https://hpnrep6.github.io/Time_Safari_inc./)
+## [Live Version](https://hpnrep6.github.io/Time_Safari_inc./)
 
 ## Description
 
