@@ -6,6 +6,10 @@ Game inspired by [A Sound of Thunder](https://en.wikipedia.org/wiki/A_Sound_of_T
 
 ## Credits
 
+### Shaders
+- [Menger Journey](https://www.shadertoy.com/view/Mdf3z7) by Syntopia
+- [Meger Tunnel](https://www.shadertoy.com/view/XslGzl) by fb39ca4
+
 ### Audio
 
 #### Background music
